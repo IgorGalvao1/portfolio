@@ -108,8 +108,7 @@ ul {
 .site-header nav a,
 .primary-button,
 .text-button,
-.profile-link,
-.footer-inner a {
+.profile-link {
   display: inline-flex;
   align-items: center;
 }
@@ -277,7 +276,6 @@ button:active {
   text-underline-offset: 4px;
 }
 .text-button:hover,
-footer a:hover,
 .profile-link:hover {
   color: var(--accent);
 }
@@ -644,20 +642,15 @@ h3 {
   border-radius: 14px;
   font: 500 0.875rem var(--mono);
 }
-footer {
-  border-top: 1px solid var(--line);
-}
-.footer-inner {
+.back-to-top {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 82px;
-  color: #aaa7a3;
-  font: 500 0.875rem var(--mono);
+  justify-content: center;
+  margin-top: clamp(48px, 6vw, 88px);
 }
-.footer-inner a {
-  min-height: 44px;
-  gap: 8px;
+.back-to-top .primary-button {
+  min-height: 54px;
+  padding-inline: 28px;
+  font-size: 1rem;
 }
 @keyframes enter {
   from {
@@ -885,32 +878,5 @@ footer {
 @media (min-width: 701px) {
   .scene-stage {
     inset-block: 21px 22px;
-  }
-}
-.about .mo-gt__type {
-  width: fit-content;
-  color: transparent;
-  background-color: #e8e1d8;
-  background-image: linear-gradient(#e8e1d887, #e8e1d887), url('/forma.webp');
-  background-size: cover;
-  background-position: 50% 62%;
-  background-clip: text;
-  -webkit-background-clip: text;
-}
-
-@supports (animation-timeline: view()) {
-  @media (min-width: 701px) and (prefers-reduced-motion: no-preference) {
-    .about .mo-gt__type {
-      animation: copper-pass 1s linear both;
-      animation-timeline: view();
-    }
-    @keyframes copper-pass {
-      from {
-        background-position: 50% 85%;
-      }
-      to {
-        background-position: 50% 38%;
-      }
-    }
   }
 }

@@ -244,7 +244,6 @@ function Projects() {
 function About() {
   return (
     <section
-      data-moment="giant-type-pass"
       id="sobre"
       className="about section"
       aria-labelledby="about-title"
@@ -253,7 +252,7 @@ function About() {
         <div className="about-layout">
           <div className="about-heading">
             <p className="eyebrow">Trajetória</p>
-            <h2 id="about-title" className="mo-gt__type">
+            <h2 id="about-title">
               Sobre mim<span className="punctuation">.</span>
             </h2>
             <a
@@ -290,6 +289,9 @@ function About() {
             </p>
           </div>
         </div>
+        <div className="back-to-top">
+          <a className="primary-button" href="#inicio">Voltar para cima</a>
+        </div>
       </div>
     </section>
   )
@@ -307,12 +309,6 @@ export default function App() {
         <Projects />
         <About />
       </main>
-      <footer>
-        <div className="wrap footer-inner">
-          <span>© Igor Galvão</span>
-          <a href="#inicio">Voltar ao início</a>
-        </div>
-      </footer>
     </>
   )
 }
