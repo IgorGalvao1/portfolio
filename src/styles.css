@@ -143,7 +143,8 @@ h1 span {
   font-family: var(--mono);
 }
 .brand-word {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
   color: #c1c0bd;
 }
 .site-header nav {
@@ -177,7 +178,7 @@ h1 span {
   height: 40px;
   padding: 0 14px;
   border: 1px solid #3c3b39;
-  border-radius: 6px;
+  border-radius: 14px;
   transition:
     background 0.18s,
     border-color 0.18s;
@@ -258,7 +259,7 @@ h1 {
   justify-content: center;
   gap: 10px;
   padding: 0 19px;
-  border-radius: 5px;
+  border-radius: 14px;
   background: var(--accent);
   color: #17100e;
   transition:
@@ -313,10 +314,11 @@ footer a:hover,
   justify-content: space-between;
   align-items: center;
   color: #a09c97;
-  font-size: 0.69rem;
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 .scene-meta {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   top: 0;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -334,7 +336,7 @@ footer a:hover,
   bottom: -4px;
 }
 .scene-controls > span {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
 }
 .scene-controls button {
   display: grid;
@@ -434,20 +436,22 @@ footer a:hover,
   align-items: center;
   gap: clamp(25px, 4.2vw, 80px);
   min-height: 80px;
+  padding-block: 24px;
 }
 .stack-label {
   color: #aaa8a4;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.14em;
   white-space: nowrap;
 }
 .stack-inner ul {
   flex: 1;
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   align-items: center;
-  justify-content: space-between;
-  gap: 14px;
+  gap: 18px 20px;
 }
 .stack-inner li {
   display: flex;
@@ -490,7 +494,7 @@ h2 {
   align-items: center;
   border: 1px solid var(--line);
   padding: 4px;
-  border-radius: 8px;
+  border-radius: 16px;
   gap: 2px;
 }
 .filters button {
@@ -499,12 +503,13 @@ h2 {
   justify-content: center;
   gap: 8px;
   border: 0;
-  border-radius: 4px;
+  border-radius: 11px;
   background: transparent;
   color: #adaba8;
   min-height: 36px;
   padding: 0 12px;
-  font-size: 0.83rem;
+  font-size: 0.9rem;
+  font-weight: 600;
   transition:
     background 0.18s,
     color 0.18s;
@@ -519,7 +524,8 @@ h2 {
 .filters button span {
   color: #a29e98;
   font-family: var(--mono);
-  font-size: 0.69rem;
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 .project-link {
   scroll-margin-block: 85px 10px;
@@ -538,7 +544,7 @@ h2 {
 }
 .project-image {
   position: relative;
-  border-radius: 6px;
+  border-radius: 20px;
   overflow: hidden;
   background: var(--surface);
   border: 1px solid #ffffff12;
@@ -580,7 +586,8 @@ h2 {
   align-items: center;
   flex-wrap: wrap;
   gap: 10px;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
   letter-spacing: 0.07em;
   color: var(--muted);
   text-transform: uppercase;
@@ -588,11 +595,6 @@ h2 {
 }
 .project-topline > span:first-child {
   color: var(--accent);
-}
-.meta-divider {
-  width: 16px;
-  height: 1px;
-  background: #605952;
 }
 h3 {
   font-size: clamp(26px, 2.25vw, 38px);
@@ -619,9 +621,9 @@ h3 {
 .tags li {
   border: 1px solid #393735;
   color: #c5c0bc;
-  border-radius: 4px;
-  font: 0.73rem/1.4 var(--mono);
-  padding: 4px 8px;
+  border-radius: 10px;
+  font: 500 0.875rem/1.4 var(--mono);
+  padding: 5px 10px;
 }
 .about {
   border-top: 1px solid var(--line);
@@ -647,8 +649,8 @@ h3 {
   min-height: 44px;
   padding: 0 14px;
   border: 1px solid #403d39;
-  border-radius: 5px;
-  font: 0.8rem var(--mono);
+  border-radius: 14px;
+  font: 500 0.875rem var(--mono);
 }
 .metrics {
   display: grid;
@@ -681,7 +683,7 @@ footer {
   justify-content: space-between;
   min-height: 82px;
   color: #aaa7a3;
-  font: 0.74rem var(--mono);
+  font: 500 0.875rem var(--mono);
 }
 .footer-inner a {
   min-height: 44px;
@@ -845,7 +847,7 @@ footer {
     gap: 16px 10px;
   }
   .stack-inner li {
-    font-size: 0.85rem;
+    font-size: 0.875rem;
   }
   .section {
     padding-block: 48px;
@@ -888,9 +890,15 @@ footer {
   .site-header nav {
     gap: 15px;
   }
+  .stack-inner ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .filters button {
-    padding-inline: 8px;
-    gap: 5px;
+    padding-inline: 5px;
+    gap: 3px;
+  }
+  .filters button span {
+    font-size: 0.75rem;
   }
   .metrics {
     gap: 18px;

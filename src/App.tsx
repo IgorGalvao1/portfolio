@@ -13,9 +13,12 @@ const technologies = [
   ['javascript', 'JavaScript'],
   ['vuedotjs', 'Vue.js'],
   ['react', 'React'],
+  ['nextdotjs', 'Next.js'],
+  ['typescript', 'TypeScript'],
   ['threedotjs', 'Three.js'],
   ['gsap', 'GSAP'],
   ['tailwindcss', 'Tailwind CSS'],
+  ['sass', 'Sass'],
 ]
 
 function Brand() {
@@ -178,8 +181,6 @@ function ProjectCard({ project }: { project: Project }) {
         </div>
         <div className="project-topline">
           <span>{project.category}</span>
-          <span className="meta-divider" />
-          {project.context}
         </div>
         <h3>{project.name}</h3>
       </a>

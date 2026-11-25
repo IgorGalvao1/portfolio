@@ -2,7 +2,6 @@ export type Project = {
   id: string
   name: string
   category: 'Profissional' | 'Pessoal'
-  context: string
   description: string
   tools: string[]
   url: string
@@ -13,7 +12,6 @@ export const projects: Project[] = [
     id: 'rs3000',
     name: 'Orion RS3000',
     category: 'Profissional',
-    context: 'Orion',
     description:
       'Desenhei e programei a página do RS3000. Otimizei o modelo 3D do equipamento para que o visitante pudesse explorá-lo direto no navegador.',
     tools: ['Vue.js', 'Three.js', 'GSAP', 'Tailwind CSS'],
@@ -23,7 +21,6 @@ export const projects: Project[] = [
     id: 'senna',
     name: 'Ayrton Senna',
     category: 'Pessoal',
-    context: 'Tributo interativo',
     description:
       'Reuni a história, as conquistas e os momentos marcantes de Senna em uma homenagem que combina animação e cenas em 3D.',
     tools: ['React', 'Three.js', 'GSAP', 'Tailwind CSS'],
@@ -33,7 +30,6 @@ export const projects: Project[] = [
     id: 'extremejet',
     name: 'ExtremeJet',
     category: 'Profissional',
-    context: 'Orion',
     description:
       'Criei o design e as interações que colocam dois bicos de aplicação lado a lado. As animações mostram como o jato do ExtremeJet se comporta em relação ao convencional.',
     tools: ['Vue.js', 'GSAP', 'Tailwind CSS'],
@@ -43,7 +39,6 @@ export const projects: Project[] = [
     id: 'ipod',
     name: 'iPod Classic',
     category: 'Pessoal',
-    context: 'Player de música',
     description:
       'Um iPod repousa sobre a mesa de uma sala em 3D. Ao entrar, ele se levanta e liga. Programei a interface da tela para navegar pela seleção de músicas e dar o play.',
     tools: ['React', 'Three.js', 'React Three Fiber'],
@@ -53,7 +48,6 @@ export const projects: Project[] = [
     id: 'seed-saving',
     name: 'Seed Saving',
     category: 'Profissional',
-    context: 'Orion',
     description:
       'Do design ao código, construí a apresentação do sistema de eletrificação de plantadeiras da Orion. Usei animações para explicar os benefícios do equipamento.',
     tools: ['Vue.js', 'GSAP', 'Tailwind CSS'],
@@ -63,7 +57,6 @@ export const projects: Project[] = [
     id: 'iphone',
     name: 'iPhone 17 Pro Max',
     category: 'Pessoal',
-    context: 'Estudo de movimento',
     description:
       'Vinculei a posição e a rotação de um iPhone em 3D à rolagem da página. O movimento aproxima, afasta e vira o aparelho para mostrar seus detalhes.',
     tools: ['React', 'Three.js', 'GSAP'],
