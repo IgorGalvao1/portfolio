@@ -96,6 +96,13 @@ ul {
   background: rgba(16, 16, 16, 0.96);
   border-bottom: 1px solid var(--line);
 }
+@supports (backdrop-filter: blur(16px)) or (-webkit-backdrop-filter: blur(16px)) {
+  .site-header {
+    background: rgba(16, 16, 16, 0.76);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+  }
+}
 .header-inner {
   min-height: 74px;
   display: grid;
@@ -142,7 +149,7 @@ h1 span {
   font-family: var(--mono);
 }
 .brand-word {
-  font-size: 0.875rem;
+  font-size: 0.95rem;
   font-weight: 500;
   color: #c1c0bd;
 }
@@ -153,8 +160,9 @@ h1 span {
   position: relative;
   justify-content: center;
   min-height: 44px;
-  color: #a8a7a5;
-  font-size: 0.9rem;
+  color: #c4c2be;
+  font-size: 1rem;
+  font-weight: 550;
   transition: color 0.18s;
 }
 .site-header nav a:hover,
@@ -163,18 +171,19 @@ h1 span {
 }
 .site-header nav a[aria-current]::before {
   content: '';
+  position: absolute;
+  left: -11px;
   width: 5px;
   height: 5px;
   border-radius: 50%;
   background: var(--accent);
-  margin-right: 7px;
 }
 .github-button {
   justify-self: end;
   gap: 9px;
-  font-size: 0.85rem;
-  font-weight: 520;
-  height: 40px;
+  font-size: 1rem;
+  font-weight: 550;
+  height: 44px;
   padding: 0 14px;
   border: 1px solid #3c3b39;
   border-radius: 14px;
@@ -741,9 +750,6 @@ h3 {
     justify-content: center;
     gap: 20px;
   }
-  .site-header nav a {
-    font-size: 0.83rem;
-  }
   .github-button {
     width: 44px;
     height: 44px;
@@ -851,7 +857,7 @@ h3 {
     gap: 9px;
   }
   .site-header nav {
-    gap: 15px;
+    gap: 12px;
   }
   .stack-inner ul {
     grid-template-columns: repeat(2, minmax(0, 1fr));
