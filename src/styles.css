@@ -214,20 +214,12 @@ h1 span {
   min-width: 0;
 }
 .eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 11px;
   text-transform: uppercase;
   letter-spacing: 0.11em;
-  font-size: 0.76rem;
+  font-size: 0.95rem;
+  font-weight: 500;
   line-height: 1.5;
   color: var(--accent);
-}
-.eyebrow > span {
-  display: inline-block;
-  width: 25px;
-  height: 2px;
-  background: var(--accent);
 }
 h1 {
   font-size: clamp(64px, 7.65vw, 129px);
@@ -652,28 +644,6 @@ h3 {
   border-radius: 14px;
   font: 500 0.875rem var(--mono);
 }
-.metrics {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 28px;
-  border-top: 1px solid #3a3835;
-  margin-top: 32px;
-  padding-top: 24px;
-}
-.metrics dt {
-  font-size: clamp(42px, 4vw, 66px);
-  font-weight: 480;
-  letter-spacing: -0.065em;
-}
-.metrics dt span {
-  color: var(--accent);
-}
-.metrics dd {
-  margin-top: 4px;
-  color: #b0aaa5;
-  line-height: 1.55;
-  font-size: 0.95rem;
-}
 footer {
   border-top: 1px solid var(--line);
 }
@@ -899,9 +869,6 @@ footer {
   }
   .filters button span {
     font-size: 0.75rem;
-  }
-  .metrics {
-    gap: 18px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

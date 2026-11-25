@@ -99,10 +99,7 @@ function Hero() {
     >
       <div className="wrap hero-inner">
         <div className="hero-copy">
-          <p className="eyebrow">
-            <span aria-hidden="true" />
-            Desenvolvedor front-end
-          </p>
+          <p className="eyebrow">Desenvolvedor front-end</p>
           <h1 id="hero-title">
             Igor Galvão<span>.</span>
           </h1>
@@ -255,10 +252,7 @@ function About() {
       <div className="wrap">
         <div className="about-layout">
           <div className="about-heading">
-            <p className="eyebrow">
-              <span aria-hidden="true" />
-              Trajetória
-            </p>
+            <p className="eyebrow">Trajetória</p>
             <h2 id="about-title" className="mo-gt__type">
               Sobre mim<span className="punctuation">.</span>
             </h2>
@@ -294,26 +288,6 @@ function About() {
               a interface e a performance. No dia a dia, trabalhei com
               JavaScript, Vue.js, Tailwind CSS, SCSS, Mapbox, Git e GitHub.
             </p>
-            <dl className="metrics">
-              <div>
-                <dt>
-                  ≈90<span>%</span>
-                </dt>
-                <dd>
-                  de redução no tempo de processamento e visualização de imagens
-                  de satélite.
-                </dd>
-              </div>
-              <div>
-                <dt>
-                  10<span>+</span>
-                </dt>
-                <dd>
-                  gráficos na página de monitoramento climático que desenvolvi
-                  para a CygniAG.
-                </dd>
-              </div>
-            </dl>
           </div>
         </div>
       </div>
