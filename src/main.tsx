@@ -1,6 +1,8 @@
 import { createRoot, hydrateRoot } from 'react-dom/client'
 import '@fontsource-variable/geist'
+import '@fontsource/ibm-plex-mono/latin-400.css'
 import '@fontsource/ibm-plex-mono/500.css'
+import '@fontsource/ibm-plex-mono/latin-700.css'
 import './styles.css'
 import App from './App'
 

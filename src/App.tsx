@@ -28,8 +28,6 @@ function Brand() {
       <span className="monogram" aria-hidden="true">
         ig<span>.</span>
       </span>
-      <span className="brand-divider" aria-hidden="true" />
-      <span className="brand-word">Portfólio</span>
     </a>
   )
 }

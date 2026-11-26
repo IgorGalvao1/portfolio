@@ -5,7 +5,7 @@
   --ink: #f3f7f9;
   --muted: #a7b3c1;
   --line: #213040;
-  --accent: #2586c7;
+  --accent: #2992d8;
   --header-height: 72px;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --mono: 'IBM Plex Mono', monospace;
@@ -134,20 +134,10 @@ ul {
 .punctuation {
   color: var(--accent);
 }
-.brand-divider {
-  width: 1px;
-  height: 16px;
-  background: #364353;
-}
-.brand-word,
 .eyebrow,
 .stack-label,
 .project-topline {
   font-family: var(--mono);
-}
-.brand-word {
-  font-size: 0.8rem;
-  color: var(--muted);
 }
 .site-header nav {
   gap: 4px;
@@ -238,7 +228,7 @@ ul {
   text-transform: uppercase;
   letter-spacing: 0.11em;
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 700;
   line-height: 1.5;
   color: var(--accent);
 }
@@ -247,17 +237,11 @@ ul {
   align-items: center;
   gap: 13px;
   color: var(--ink);
-  font-size: 0.8rem;
+  font-size: 1rem;
   letter-spacing: 0.16em;
   text-shadow: 0 1px 12px #080e16;
 }
-.hero-role::before,
-.hero-role::after {
-  content: '';
-  width: 18px;
-  height: 1px;
-  background: var(--accent);
-}
+
 h1 {
   margin-block: 14px 23px;
   color: var(--ink);
@@ -312,7 +296,7 @@ button:active {
 }
 .text-button,
 .profile-link {
-  border: 1px solid #2586c780;
+  border: 1px solid #2992d8;
   color: var(--ink);
   transition: background-color 180ms, border-color 180ms;
 }
@@ -598,10 +582,6 @@ h3 {
   .header-inner {
     grid-template-columns: auto 1fr auto;
     gap: 7px;
-  }
-  .brand-word,
-  .brand-divider {
-    display: none;
   }
   .monogram {
     font-size: 31px;
