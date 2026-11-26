@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react'
 import { ExternalLink } from 'lucide-react'
 import Aurora from './Aurora'
-import TechnologySection from './TechnologySection'
+import TechnologyGlobe from './TechnologyGlobe'
 import { projects, type Project } from './projects'
 
 const github = 'https://github.com/igorgalvao1'
 const sections = [
   { id: 'inicio', label: 'Início' },
   { id: 'projetos', label: 'Projetos' },
-  { id: 'tecnologias', label: 'Tecnologias' },
   { id: 'sobre', label: 'Sobre' },
 ]
 const auroraColors = ['#1e3d91', '#2586c7', '#69efbd', '#197685', '#202f76']
@@ -236,44 +235,42 @@ function About() {
     >
       <div className="wrap">
         <div className="about-layout">
-          <div className="about-heading">
-            <p className="eyebrow">Trajetória</p>
+          <div className="about-intro">
             <h2 id="about-title">
               Sobre mim<span className="punctuation">.</span>
             </h2>
-            <a
-              href={github}
-              className="profile-link"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <img
-                src="/icons/github.svg"
-                alt=""
-                width="16"
-                height="16"
-                loading="lazy"
-              />{' '}
-              @igorgalvao1 <ExternalLink size={14} />
-            </a>
-          </div>
-          <div className="about-text">
             <p className="about-lead">
-              Gosto de interfaces simples, bem desenhadas, e de descobrir o que
-              dá para fazer com 3D no navegador.
+              Me formei em Big Data no Agronegócio na Fatec Shunji Nishimura e
+              trabalhei com aplicações web para o setor no Grupo Orion.
             </p>
             <p>
-              Atuei como desenvolvedor front-end júnior na Cygni Agrociência, do
-              grupo Orion. Trabalhei tanto nos sites que apresentam os
-              equipamentos quanto na CygniAG, plataforma de monitoramento
-              agrícola por imagens de satélite e dados agronômicos.
+              No grupo, comecei como estagiário de TI e depois atuei como
+              desenvolvedor front-end júnior. Na CygniAG, plataforma de
+              monitoramento agrícola, ajudei a reduzir em cerca de 90% o tempo
+              necessário para processar e exibir imagens de satélite no front.
             </p>
             <p>
-              Na plataforma, desenvolvi funcionalidades, corrigi bugs e melhorei
-              a interface e a performance. No dia a dia, trabalhei com
-              JavaScript, Vue.js, Tailwind CSS, SCSS, Mapbox, Git e GitHub.
+              Também trabalhei nos sites do grupo, criando experiências
+              interativas com Three.js e otimizando modelos 3D para rodar no
+              navegador.
             </p>
           </div>
+          <TechnologyGlobe />
+          <a
+            href={github}
+            className="profile-link"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <img
+              src="/icons/github.svg"
+              alt=""
+              width="16"
+              height="16"
+              loading="lazy"
+            />{' '}
+            @igorgalvao1 <ExternalLink size={14} aria-hidden="true" />
+          </a>
         </div>
         <div className="back-to-top">
           <a className="primary-button" href="#inicio">Voltar para cima</a>
@@ -293,7 +290,6 @@ export default function App() {
       <main id="main" tabIndex={-1}>
         <Hero />
         <Projects />
-        <TechnologySection />
         <About />
       </main>
     </>
