@@ -37,19 +37,4 @@ function staticPortfolio(): Plugin {
 
 export default defineConfig({
   plugins: [react(), staticPortfolio(), projectImages()],
-  build: {
-    rolldownOptions: {
-      output: {
-        codeSplitting: {
-          groups: [
-            { name: 'three-core', test: /three\/build\/three\.core\.js$/ },
-            {
-              name: 'three-renderer',
-              test: /three\/build\/three\.module\.js$/,
-            },
-          ],
-        },
-      },
-    },
-  },
 })

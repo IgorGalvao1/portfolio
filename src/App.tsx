@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { ExternalLink, Layers2 } from 'lucide-react'
-import { Sculpture } from './Sculpture'
+import { ExternalLink } from 'lucide-react'
+import Aurora from './Aurora'
 import { projects, type Project } from './projects'
 
 const github = 'https://github.com/igorgalvao1'
@@ -20,6 +20,7 @@ const technologies = [
   ['tailwindcss', 'Tailwind CSS'],
   ['sass', 'Sass'],
 ]
+const auroraColors = ['#1e3d91', '#2586c7', '#69efbd', '#197685', '#202f76']
 
 function Brand() {
   return (
@@ -97,31 +98,45 @@ function Hero() {
       aria-labelledby="hero-title"
       data-enter
     >
-      <div className="wrap hero-inner">
-        <div className="hero-copy">
-          <p className="eyebrow">Desenvolvedor front-end</p>
-          <h1 id="hero-title">
-            Igor Galvão<span>.</span>
-          </h1>
-          <p className="hero-lead">
-            Crio interfaces para a web, da visualização de dados agrícolas a
-            experiências interativas em 3D.
-          </p>
-          <div className="actions">
-            <a className="primary-button" href="#projetos">
-              <Layers2 size={16} /> Explorar projetos
-            </a>
-            <a className="text-button" href="#sobre">
-              Sobre mim
-            </a>
+      <div className="hero-stage">
+        <div className="hero-sky">
+          <Aurora
+            colorStops={auroraColors}
+            amplitude={2.3}
+            blend={0.33}
+            height={0.47}
+            speed={1.15}
+            scale={1.08}
+            glow={0.46}
+            brightness={1.12}
+            layers={2}
+            intro={false}
+            dpr={1}
+          />
+        </div>
+        <div className="wrap hero-inner">
+          <div className="hero-copy">
+            <p className="eyebrow hero-role">Desenvolvedor front-end</p>
+            <h1 id="hero-title">Igor Galvão</h1>
+            <p className="hero-lead">
+              Crio interfaces para a web, da visualização de dados agrícolas a
+              experiências interativas em 3D.
+            </p>
+            <div className="actions">
+              <a className="primary-button" href="#projetos">
+                Ver projetos
+              </a>
+              <a className="text-button" href="#sobre">
+                Sobre mim
+              </a>
+            </div>
           </div>
         </div>
-        <Sculpture />
       </div>
       <div className="stack-bar">
         <div className="wrap stack-inner">
-          <span className="stack-label">Minha stack</span>
-          <ul>
+          <span className="stack-label" id="stack-label">Tecnologias</span>
+          <ul aria-labelledby="stack-label">
             {technologies.map(([slug, name]) => (
               <li key={slug}>
                 <img
