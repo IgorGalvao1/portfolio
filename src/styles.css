@@ -67,14 +67,6 @@ ul {
   width: min(100% - clamp(48px, 10vw, 168px), 1376px);
   margin-inline: auto;
 }
-.sr-only {
-  position: absolute;
-  height: 1px;
-  width: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
 .skip-link {
   position: fixed;
   z-index: 30;
@@ -105,16 +97,8 @@ ul {
   height: 16px;
   filter: invert(0.94);
 }
-.hero::after,
-.projects::after {
-  /* Give each stage a viewport of travel while the next section covers it. */
-  content: '';
-  display: block;
-  height: 100svh;
-}
 .hero-stage {
-  position: sticky;
-  top: 0;
+  position: relative;
   isolation: isolate;
   display: grid;
   min-height: 100svh;
@@ -202,34 +186,24 @@ button:active {
 .section {
   padding-block: clamp(60px, 5.8vw, 96px);
 }
-.projects,
-.about {
-  margin-top: -100svh;
-}
 .projects {
   position: relative;
   z-index: 1;
 }
 .projects-stage {
-  position: sticky;
   min-height: 100svh;
-  top: calc(100svh - var(--projects-height));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   border-top: 1px solid var(--line);
   background: var(--bg);
-}
-.projects-stage:has(:focus-visible) {
-  top: auto;
 }
 .work-heading h2 {
   margin-block: 0;
   font-size: clamp(44px, 4.2vw, 70px);
 }
 .work-heading {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 24px;
-  margin-bottom: 33px;
+  margin-bottom: clamp(16px, 3.3svh, 36px);
 }
 h2 {
   font-size: clamp(50px, 4.55vw, 78px);
@@ -238,51 +212,45 @@ h2 {
   line-height: 1.1;
   margin: 12px 0 0;
 }
-.filters {
-  display: inline-flex;
-  align-items: center;
-  border: 1px solid var(--line);
-  padding: 4px;
-  border-radius: 16px;
-  gap: 2px;
+.project-viewport {
+  container-type: inline-size;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
 }
-.filters button {
+.project-track {
+  --slide-width: min(78cqw, clamp(460px, 54cqw, 760px), max(300px, 80svh));
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: 0;
-  border-radius: 11px;
-  background: transparent;
-  color: var(--muted);
-  min-height: 44px;
-  padding: 0 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  transition:
-    background 0.18s,
-    color 0.18s;
+  gap: clamp(8px, 2cqw, 32px);
+  width: max-content;
+  margin-inline: auto;
+  padding: 6px calc((100cqw - var(--slide-width)) / 2);
 }
-.filters button:hover {
-  color: white;
+.project-slide {
+  flex: none;
+  width: var(--slide-width);
+  scroll-snap-align: center;
 }
-.filters button[aria-pressed='true'] {
-  background: #203042;
-  color: var(--ink);
+[data-scroll-motion] .projects-stage {
+  padding-block: clamp(24px, 5svh, 72px);
 }
-.filters button span {
-  color: var(--muted);
-  font-family: var(--mono);
-  font-size: 0.875rem;
-  font-weight: 500;
+[data-scroll-motion] .project-viewport {
+  overflow: clip;
+  scroll-snap-type: none;
 }
-.project-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 46px 26px;
+[data-scroll-motion] .project-image {
+  transform: scale(calc(0.89 + 0.11 * var(--project-focus, 1)));
+  opacity: calc(0.52 + 0.48 * var(--project-focus, 1));
 }
-.project-card {
-  min-width: 0;
+[data-scroll-motion] .project-image img {
+  filter: blur(calc(3.2px * (1 - var(--project-focus, 1))));
+}
+[data-scroll-motion] .project-details {
+  opacity: clamp(0, (var(--project-focus, 1) - 0.22) / 0.78, 1);
+}
+[data-scroll-motion] .about {
+  margin-top: -100svh;
 }
 .project-link {
   display: block;
@@ -303,9 +271,11 @@ h2 {
   height: 100%;
   display: block;
   object-fit: cover;
-  transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
-@media (hover: hover) and (pointer: fine) {
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .project-image img {
+    transition: transform 240ms var(--ease-out);
+  }
   .project-link:hover img {
     transform: scale(1.03);
   }
@@ -351,7 +321,7 @@ h3 {
   font-weight: 510;
   line-height: 1.2;
 }
-.project-card > p {
+.project-details > p {
   margin-top: 10px;
   max-width: 62ch;
   font-size: 1rem;
@@ -451,9 +421,6 @@ h3 {
   .wrap {
     width: calc(100% - 64px);
   }
-  .work-heading {
-    gap: 16px;
-  }
 }
 @media (max-width: 850px) {
   .about-layout {
@@ -475,23 +442,8 @@ h3 {
   .section {
     padding-block: 48px;
   }
-  .work-heading {
-    display: grid;
-    gap: 21px;
-    margin-bottom: 22px;
-  }
   .work-heading h2 {
     font-size: clamp(36px, 10.75vw, 44px);
-  }
-  .filters {
-    justify-self: start;
-  }
-  .filters button {
-    padding-inline: 10px;
-  }
-  .project-grid {
-    grid-template-columns: 1fr;
-    gap: 33px;
   }
   .project-topline {
     margin-top: 16px;
@@ -509,19 +461,9 @@ h3 {
   .hero-role::after {
     width: 12px;
   }
-  .filters button {
-    padding-inline: 5px;
-    gap: 3px;
-  }
-  .filters button span {
-    font-size: 0.75rem;
-  }
 }
-@media (max-width: 320px) {
-  .work-heading {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .filters {
-    flex-wrap: wrap;
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
 }

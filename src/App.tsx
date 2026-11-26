@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import { ExternalLink } from 'lucide-react'
 import Aurora from './Aurora'
 import TechnologyGlobe from './TechnologyGlobe'
+import { enablePortfolioScroll, scrollToTop } from './portfolioScroll'
 import { projects, type Project } from './projects'
 
 const github = 'https://github.com/igorgalvao1'
@@ -13,6 +14,7 @@ function Hero() {
       className="hero"
       id="inicio"
       aria-labelledby="hero-title"
+      tabIndex={-1}
       data-enter
     >
       <div className="hero-stage">
@@ -45,12 +47,6 @@ function Hero() {
   )
 }
 
-const filters = [
-  { title: 'Todos', category: null },
-  { title: 'Profissionais', category: 'Profissional' },
-  { title: 'Pessoais', category: 'Pessoal' },
-] as const
-
 function ProjectCard({ project }: { project: Project }) {
   return (
     <article className="project-card">
@@ -71,7 +67,7 @@ function ProjectCard({ project }: { project: Project }) {
               project.id +
               '.webp 1152w'
             }
-            sizes="(max-width: 700px) calc(100vw - 40px), (max-width: 900px) calc((100vw - 90px) / 2), (max-width: 1529px) calc(45vw - 13px), 675px"
+            sizes="min(78vw, clamp(460px, 54vw, 760px), max(300px, 80svh))"
             alt=""
             loading="lazy"
             width="1152"
@@ -81,79 +77,44 @@ function ProjectCard({ project }: { project: Project }) {
             <ExternalLink size={17} />
           </span>
         </div>
-        <div className="project-topline">
-          <span>{project.category}</span>
+        <div className="project-details">
+          <div className="project-topline">
+            <span>{project.category}</span>
+          </div>
+          <h3>{project.name}</h3>
         </div>
-        <h3>{project.name}</h3>
       </a>
-      <p>{project.description}</p>
-      <ul className="tags" aria-label="Tecnologias do projeto">
-        {project.tools.map((tool) => (
-          <li key={tool}>{tool}</li>
-        ))}
-      </ul>
+      <div className="project-details">
+        <p>{project.description}</p>
+        <ul className="tags" aria-label="Tecnologias do projeto">
+          {project.tools.map((tool) => (
+            <li key={tool}>{tool}</li>
+          ))}
+        </ul>
+      </div>
     </article>
   )
 }
 
 function Projects() {
-  const stageRef = useRef<HTMLDivElement>(null)
-  const [filter, setFilter] =
-    useState<(typeof filters)[number]['category']>(null)
-  const visible = projects.filter(
-    (project) => !filter || project.category === filter,
-  )
-
-  useEffect(() => {
-    const stage = stageRef.current
-    if (!stage) return
-
-    const observer = new ResizeObserver(([entry]) => {
-      const height = entry.borderBoxSize[0].blockSize
-      stage.style.setProperty('--projects-height', `${height}px`)
-    })
-    observer.observe(stage, { box: 'border-box' })
-    return () => observer.disconnect()
-  }, [])
-
   return (
     <section
       id="projetos"
       className="projects"
       aria-labelledby="work-title"
     >
-      <div className="projects-stage section" ref={stageRef}>
-        <div className="wrap">
-          <div className="work-heading">
-            <h2 id="work-title">
-              Projetos selecionados<span className="punctuation">.</span>
-            </h2>
-            <div className="filters" role="group" aria-label="Filtrar projetos">
-              {filters.map((item) => (
-                <button
-                  type="button"
-                  key={item.title}
-                  aria-pressed={filter === item.category}
-                  onClick={() => setFilter(item.category)}
-                >
-                  {item.title}
-                  <span>
-                    {String(
-                      projects.filter(
-                        (p) => !item.category || p.category === item.category,
-                      ).length,
-                    ).padStart(2, '0')}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-          <p role="status" className="sr-only">
-            {visible.length} projetos exibidos.
-          </p>
-          <div className="project-grid">
-            {visible.map((project) => (
-              <ProjectCard key={project.id} project={project} />
+      <div className="projects-stage section">
+        <div className="wrap work-heading">
+          <h2 id="work-title">
+            Projetos selecionados<span className="punctuation">.</span>
+          </h2>
+        </div>
+        <div className="project-viewport">
+          <div className="project-track">
+            {projects.map((project) => (
+              <div className="project-slide" key={project.id}>
+                <ProjectCard project={project} />
+              </div>
             ))}
           </div>
         </div>
@@ -209,7 +170,9 @@ function About() {
           </a>
         </div>
         <div className="back-to-top">
-          <a className="primary-button" href="#inicio">Voltar para cima</a>
+          <a className="primary-button" href="#inicio" onClick={scrollToTop}>
+            Voltar para cima
+          </a>
         </div>
       </div>
     </section>
@@ -217,16 +180,27 @@ function About() {
 }
 
 export default function App() {
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLElement>(null)
+
+  useLayoutEffect(() => {
+    if (wrapperRef.current && contentRef.current) {
+      return enablePortfolioScroll(wrapperRef.current, contentRef.current)
+    }
+  }, [])
+
   return (
     <>
-      <a className="skip-link" href="#main">
+      <a className="skip-link" href="#main" onClick={scrollToTop}>
         Pular para o conteúdo
       </a>
-      <main id="main" tabIndex={-1}>
-        <Hero />
-        <Projects />
-        <About />
-      </main>
+      <div ref={wrapperRef}>
+        <main id="main" ref={contentRef} tabIndex={-1}>
+          <Hero />
+          <Projects />
+          <About />
+        </main>
+      </div>
     </>
   )
 }
