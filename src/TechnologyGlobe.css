@@ -16,7 +16,7 @@
   transform-style: preserve-3d;
   animation: technology-rotation 28s linear infinite;
 }
-.technology-orbit[data-paused] {
+.technology-orbit:is([data-paused], [data-steering]) {
   animation-play-state: paused;
 }
 .technology-card {
@@ -88,9 +88,9 @@
 }
 @keyframes technology-rotation {
   from {
-    transform: rotateZ(-10deg) rotateX(-8deg) rotateY(0deg);
+    transform: rotateZ(-10deg) rotateX(var(--orbit-pitch, -8deg)) rotateY(var(--orbit-yaw, 0deg));
   }
   to {
-    transform: rotateZ(-10deg) rotateX(-8deg) rotateY(360deg);
+    transform: rotateZ(-10deg) rotateX(var(--orbit-pitch, -8deg)) rotateY(calc(var(--orbit-yaw, 0deg) + 360deg));
   }
 }
