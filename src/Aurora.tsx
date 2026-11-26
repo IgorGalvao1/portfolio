@@ -1,6 +1,52 @@
 /*! Aurora adapted from React Bits by David Haz. See /licenses/react-bits.txt. */
-import { useEffect, useRef, type CSSProperties } from 'react'
-import './Aurora.css'
+'use client';
+
+import { useEffect, useRef, type CSSProperties } from 'react';
+import './Aurora.css';
+
+export interface AuroraProps {
+  colorStops?: string[];
+  amplitude?: number;
+  blend?: number;
+  speed?: number;
+  time?: number;
+  height?: number;
+  scale?: number;
+  glow?: number;
+  brightness?: number;
+  layers?: number;
+  direction?: 'top' | 'bottom';
+  mouseInteraction?: boolean;
+  intro?: boolean;
+  opacity?: number;
+  lightMode?: boolean;
+  paused?: boolean;
+  dpr?: number;
+  className?: string;
+  style?: CSSProperties;
+}
+
+type Settings = {
+  stops: string[];
+  amplitude: number;
+  blend: number;
+  speed: number;
+  time?: number;
+  height: number;
+  scale: number;
+  glow: number;
+  brightness: number;
+  layers: number;
+  flip: number;
+  mouseInteraction: boolean;
+  intro: boolean;
+  opacity: number;
+  lightMode: boolean;
+  paused: boolean;
+  dpr?: number;
+};
+
+type Program = { program: WebGLProgram; uniforms: Record<string, WebGLUniformLocation | null> };
 
 const MAX_STOPS = 5;
 const MAX_LAYERS = 3;
@@ -27,7 +73,7 @@ uniform float uGlow;
 uniform float uBrightness;
 uniform int uLayers;
 uniform float uFlip;
-uniform vec2 uPointer;
+uniform vec3 uPointer;
 uniform float uReveal;
 uniform float uOpacity;
 uniform float uLightMode;
@@ -107,7 +153,7 @@ void main() {
   float u = frag.x / uResolution.x;
   float X = (frag.x - uResolution.x * 0.5) / uResolution.y;
   float t = uTime;
-  float reach = uPointer.y * exp(-pow((X - uPointer.x) / 0.38, 2.0));
+  float reach = uPointer.z * exp(-pow((X - uPointer.x) / 0.38, 2.0));
 
   vec3 glow = vec3(0.0);
   float cover = 0.0;
@@ -156,7 +202,7 @@ void main() {
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
-const toOklch = (rgb: number[]): [number, number, number] => {
+const toOklch = (rgb: number[]): number[] => {
   const [r, g, b] = rgb.map(c => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)));
   const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
   const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
@@ -169,7 +215,7 @@ const toOklch = (rgb: number[]): [number, number, number] => {
   return [lab[0], Math.hypot(lab[1], lab[2]), Math.atan2(lab[2], lab[1])];
 };
 
-const unwrapHues = (stops: [number, number, number][]) => {
+const unwrapHues = (stops: number[][]): number[][] => {
   const known = stops.findIndex(stop => stop[1] > 0.02);
   const anchor = known === -1 ? 0 : stops[known][2];
   let previous = anchor;
@@ -182,110 +228,47 @@ const unwrapHues = (stops: [number, number, number][]) => {
   });
 };
 
-function compileShader(gl: WebGL2RenderingContext, type: number, source: string) {
-  const shader = gl.createShader(type)
-  if (!shader) return null
-  gl.shaderSource(shader, source)
-  gl.compileShader(shader)
-  if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) return shader
-  gl.deleteShader(shader)
-  return null
-}
+const compile = (gl: WebGL2RenderingContext, type: number, source: string) => {
+  const shader = gl.createShader(type);
+  if (!shader) return null;
+  gl.shaderSource(shader, source);
+  gl.compileShader(shader);
+  if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) return shader;
+  gl.deleteShader(shader);
+  return null;
+};
 
-function createAurora(gl: WebGL2RenderingContext) {
-  const vertex = compileShader(gl, gl.VERTEX_SHADER, VERTEX)
-  const fragment = compileShader(gl, gl.FRAGMENT_SHADER, FRAGMENT)
-  const program = gl.createProgram()
-  const buffer = gl.createBuffer()
-  const vao = gl.createVertexArray()
-
-  const dispose = () => {
-    gl.deleteProgram(program)
-    gl.deleteBuffer(buffer)
-    gl.deleteVertexArray(vao)
+const link = (gl: WebGL2RenderingContext): Program | null => {
+  const vertex = compile(gl, gl.VERTEX_SHADER, VERTEX);
+  const fragment = compile(gl, gl.FRAGMENT_SHADER, FRAGMENT);
+  const program = gl.createProgram();
+  if (!vertex || !fragment || !program) return null;
+  gl.attachShader(program, vertex);
+  gl.attachShader(program, fragment);
+  gl.bindAttribLocation(program, 0, 'aPosition');
+  gl.linkProgram(program);
+  gl.deleteShader(vertex);
+  gl.deleteShader(fragment);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    gl.deleteProgram(program);
+    return null;
   }
-
-  if (program && vertex && fragment) {
-    gl.attachShader(program, vertex)
-    gl.attachShader(program, fragment)
-    gl.bindAttribLocation(program, 0, 'aPosition')
-    gl.linkProgram(program)
+  const uniforms: Record<string, WebGLUniformLocation | null> = {};
+  const count = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+  for (let i = 0; i < count; i++) {
+    const info = gl.getActiveUniform(program, i);
+    if (info) uniforms[info.name.replace('[0]', '')] = gl.getUniformLocation(program, info.name);
   }
-  gl.deleteShader(vertex)
-  gl.deleteShader(fragment)
-  if (!program || !buffer || !vao || !gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    dispose()
-    return null
-  }
+  return { program, uniforms };
+};
 
-  const uniforms: Record<string, WebGLUniformLocation | null> = {}
-  const count = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS)
-  for (let index = 0; index < count; index += 1) {
-    const uniform = gl.getActiveUniform(program, index)
-    if (uniform) {
-      uniforms[uniform.name.replace('[0]', '')] = gl.getUniformLocation(program, uniform.name)
-    }
-  }
-
-  gl.bindVertexArray(vao)
-  gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW)
-  gl.enableVertexAttribArray(0)
-  gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0)
-  return { program, vao, uniforms, dispose }
-}
-
-const defaultStops = ['#5227FF', '#7cff67', '#5227FF']
-
-function readPalette(stops: readonly string[]) {
-  const probe = document.createElement('canvas').getContext('2d', { willReadFrequently: true })
-  const colors = stops.filter(Boolean).slice(0, MAX_STOPS)
-  if (colors.length === 0) colors.push(...defaultStops)
-  if (colors.length === 1) colors.push(colors[0])
-
-  const palette = new Float32Array(MAX_STOPS * 3)
-  const stopsInOklch = colors.map((color) => {
-    if (!probe) return toOklch([1, 1, 1])
-    probe.clearRect(0, 0, 1, 1)
-    probe.fillStyle = '#ffffff'
-    probe.fillStyle = color
-    probe.fillRect(0, 0, 1, 1)
-    const [red, green, blue] = probe.getImageData(0, 0, 1, 1).data
-    return toOklch([red / 255, green / 255, blue / 255])
-  })
-
-  unwrapHues(stopsInOklch).forEach((stop, index) => palette.set(stop, index * 3))
-  return { palette, stopCount: colors.length }
-}
-
-type AuroraProps = {
-  colorStops?: readonly string[]
-  amplitude?: number
-  blend?: number
-  height?: number
-  speed?: number
-  scale?: number
-  glow?: number
-  brightness?: number
-  layers?: number
-  direction?: 'top' | 'bottom'
-  mouseInteraction?: boolean
-  intro?: boolean
-  opacity?: number
-  lightMode?: boolean
-  time?: number
-  paused?: boolean
-  dpr?: number
-  className?: string
-  style?: CSSProperties
-}
-
-export default function Aurora({
-  colorStops = defaultStops,
+const Aurora = ({
+  colorStops = ['#5227FF', '#7cff67', '#5227FF'],
   amplitude = 1,
   blend = 0.5,
-  height = 0.45,
   speed = 1,
+  time,
+  height = 0.45,
   scale = 1,
   glow = 0.6,
   brightness = 1,
@@ -295,21 +278,22 @@ export default function Aurora({
   intro = true,
   opacity = 1,
   lightMode = false,
-  time,
   paused = false,
   dpr,
   className = '',
-  style,
-}: AuroraProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const refreshRef = useRef<() => void>(null)
-  const settings = {
-    colorStops,
+  style
+}: AuroraProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const wakeRef = useRef<(() => void) | null>(null);
+  const stops = (Array.isArray(colorStops) ? colorStops : []).filter(Boolean).map(String).slice(0, MAX_STOPS);
+  const settings: Settings = {
+    stops: stops.length >= 2 ? stops : stops.length === 1 ? [stops[0], stops[0]] : ['#5227FF', '#7cff67'],
     amplitude: Math.max(0, amplitude),
     blend: clamp(blend, 0, 1),
-    height: clamp(height, 0, 1),
     speed,
+    time,
+    height: clamp(height, 0, 1),
     scale: Math.max(0.1, scale),
     glow: Math.max(0, glow),
     brightness: Math.max(0, brightness),
@@ -319,198 +303,225 @@ export default function Aurora({
     intro,
     opacity: clamp(opacity, 0, 1),
     lightMode,
-    time,
     paused,
-    dpr,
-  }
-  const settingsRef = useRef(settings)
+    dpr
+  };
+  const settingsRef = useRef(settings);
+  settingsRef.current = settings;
 
   useEffect(() => {
-    settingsRef.current = settings
-    refreshRef.current?.()
-  })
-
-  useEffect(() => {
-    const container = containerRef.current
-    const canvas = canvasRef.current
-    if (!container || !canvas) return
-    const gl = canvas.getContext('webgl2', {
+    const container = containerRef.current;
+    const canvas = canvasRef.current;
+    const gl = canvas?.getContext('webgl2', {
       alpha: true,
       premultipliedAlpha: true,
       antialias: false,
       depth: false,
-      stencil: false,
-    })
-    if (!gl) return
+      stencil: false
+    });
+    if (!container || !canvas || !gl) return undefined;
 
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
-    let renderer = createAurora(gl)
-    let paletteKey = JSON.stringify(settingsRef.current.colorStops)
-    let { palette, stopCount } = readPalette(settingsRef.current.colorStops)
-    let visible = true
-    let raf = 0
-    let lastFrame = 0
-    let clock = 0
-    let reveal = settingsRef.current.intro && !reducedMotion.matches ? 0 : 1
-    let pointerTarget = 0
-    let pointerX = 0
-    let reach = 0
-    let pointerInside = false
+    const program = link(gl);
+    if (!program) return undefined;
+    const u = program.uniforms;
 
-    const draw = () => {
-      if (!renderer || gl.isContextLost()) return
-      const s = settingsRef.current
-      const { program, vao, uniforms: u } = renderer
-      gl.viewport(0, 0, canvas.width, canvas.height)
-      gl.useProgram(program)
-      gl.bindVertexArray(vao)
-      gl.uniform2f(u.uResolution, canvas.width, canvas.height)
-      gl.uniform1f(u.uTime, s.time === undefined ? clock : s.time * s.speed * 0.1)
-      gl.uniform3fv(u.uStops, palette)
-      gl.uniform1i(u.uStopCount, stopCount)
-      gl.uniform1f(u.uAmplitude, s.amplitude)
-      gl.uniform1f(u.uBlend, s.blend)
-      gl.uniform1f(u.uHeight, s.height)
-      gl.uniform1f(u.uScale, s.scale)
-      gl.uniform1f(u.uGlow, s.glow)
-      gl.uniform1f(u.uBrightness, s.brightness)
-      gl.uniform1i(u.uLayers, s.layers)
-      gl.uniform1f(u.uFlip, s.flip)
-      gl.uniform2f(u.uPointer, pointerX, reach)
-      gl.uniform1f(u.uReveal, 1 - Math.pow(1 - reveal, 3))
-      gl.uniform1f(u.uOpacity, s.opacity)
-      gl.uniform1f(u.uLightMode, s.lightMode ? 1 : 0)
-      gl.drawArrays(gl.TRIANGLES, 0, 3)
-      if (!container.hasAttribute('data-aurora-ready')) {
-        container.setAttribute('data-aurora-ready', '')
+    const buffer = gl.createBuffer();
+    const vao = gl.createVertexArray();
+    gl.bindVertexArray(vao);
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+
+    const probe = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+    const cache = new Map<string, number[]>();
+    const parse = (value: string): number[] => {
+      const cached = cache.get(value);
+      if (cached) return cached;
+      let rgb = [1, 1, 1];
+      if (probe) {
+        probe.clearRect(0, 0, 1, 1);
+        probe.fillStyle = '#ffffff';
+        probe.fillStyle = value;
+        probe.fillRect(0, 0, 1, 1);
+        const [r, g, b] = probe.getImageData(0, 0, 1, 1).data;
+        rgb = [r / 255, g / 255, b / 255];
       }
-    }
+      cache.set(value, rgb);
+      return rgb;
+    };
+    const palette = new Float32Array(MAX_STOPS * 3);
 
-    function frame(now: number) {
-      raf = 0
-      const s = settingsRef.current
-      const dt = lastFrame ? clamp((now - lastFrame) / 1000, 0, 0.05) : 0
-      const animate = !s.paused && !reducedMotion.matches
-      const engaged = s.mouseInteraction && pointerInside
-      lastFrame = animate ? now : 0
+    const view = { width: 1, height: 1 };
+    const pointer = { x: 0, y: 0, inside: false };
+    const state = {
+      clock: 0,
+      px: 0,
+      py: 0.5,
+      reach: 0,
+      reveal: settingsRef.current.intro && !reduce ? 0 : 1
+    };
+    let raf = 0;
+    let last = 0;
+    let visible = true;
 
-      if (animate) {
-        clock += dt * s.speed
-        pointerX += (pointerTarget - pointerX) * (1 - Math.exp(-dt / 0.6))
-        reach += (Number(engaged) - reach) * (1 - Math.exp(-dt / (engaged ? 0.9 : 1.4)))
-      } else if (reducedMotion.matches) {
-        reach = 0
+    const render = () => {
+      const s = settingsRef.current;
+      unwrapHues(s.stops.map(value => toOklch(parse(value)))).forEach((stop, index) => palette.set(stop, index * 3));
+      const reveal = state.reveal;
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.useProgram(program.program);
+      gl.bindVertexArray(vao);
+      gl.uniform2f(u.uResolution, canvas.width, canvas.height);
+      gl.uniform1f(u.uTime, s.time !== undefined ? s.time * s.speed * 0.1 : state.clock);
+      gl.uniform3fv(u.uStops, palette);
+      gl.uniform1i(u.uStopCount, s.stops.length);
+      gl.uniform1f(u.uAmplitude, s.amplitude);
+      gl.uniform1f(u.uBlend, s.blend);
+      gl.uniform1f(u.uHeight, s.height);
+      gl.uniform1f(u.uScale, s.scale);
+      gl.uniform1f(u.uGlow, s.glow);
+      gl.uniform1f(u.uBrightness, s.brightness);
+      gl.uniform1i(u.uLayers, s.layers);
+      gl.uniform1f(u.uFlip, s.flip);
+      gl.uniform3f(u.uPointer, state.px, state.py, state.reach);
+      gl.uniform1f(u.uReveal, 1 - Math.pow(1 - reveal, 3));
+      gl.uniform1f(u.uOpacity, s.opacity);
+      gl.uniform1f(u.uLightMode, s.lightMode ? 1 : 0);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    };
+
+    const frame = (now: number) => {
+      raf = 0;
+      if (!visible || document.hidden) return;
+      const s = settingsRef.current;
+      const dt = last ? clamp((now - last) / 1000, 0.0005, 0.05) : 1 / 60;
+      last = now;
+      if (s.paused) {
+        state.reveal = 1;
+        render();
+        last = 0;
+        return;
       }
-      reveal = s.intro && animate ? Math.min(1, reveal + dt / INTRO_SECONDS) : 1
-      draw()
-      if (animate) wake()
-    }
-
-    function wake() {
-      if (!raf && renderer && visible && !document.hidden) {
-        raf = requestAnimationFrame(frame)
+      const motion = reduce ? 0 : 1;
+      state.clock += dt * s.speed * motion;
+      const engaged = s.mouseInteraction && pointer.inside && !reduce;
+      const follow = 1 - Math.exp(-dt / 0.6);
+      if (engaged) {
+        const tx = (pointer.x - view.width / 2) / view.height;
+        const ty = s.flip ? 1 - pointer.y / view.height : pointer.y / view.height;
+        state.px += (tx - state.px) * follow;
+        state.py += (ty - state.py) * follow;
       }
-    }
+      state.reach += ((engaged ? 1 : 0) - state.reach) * (1 - Math.exp(-dt / (engaged ? 0.9 : 1.4)));
+      if (!s.intro || reduce) state.reveal = 1;
+      else if (state.reveal < 1) state.reveal = Math.min(1, state.reveal + dt / INTRO_SECONDS);
+      render();
+      raf = requestAnimationFrame(frame);
+    };
 
-    function stop() {
-      cancelAnimationFrame(raf)
-      raf = 0
-      lastFrame = 0
-    }
+    const wake = () => {
+      if (!raf && visible && !document.hidden) raf = requestAnimationFrame(frame);
+    };
 
     const resize = () => {
-      const ratio = clamp(settingsRef.current.dpr ?? window.devicePixelRatio ?? 1, 0.5, 2)
-      const width = Math.max(1, Math.round(container.clientWidth * ratio))
-      const height = Math.max(1, Math.round(container.clientHeight * ratio))
-      if (canvas.width !== width) canvas.width = width
-      if (canvas.height !== height) canvas.height = height
-      wake()
-    }
+      const s = settingsRef.current;
+      const width = Math.max(1, container.clientWidth);
+      const height = Math.max(1, container.clientHeight);
+      const ratio = Math.min(s.dpr || window.devicePixelRatio || 1, 2);
+      view.width = width;
+      view.height = height;
+      canvas.width = Math.max(1, Math.round(width * ratio));
+      canvas.height = Math.max(1, Math.round(height * ratio));
+      render();
+      wake();
+    };
 
     const onPointerMove = (event: PointerEvent) => {
-      if (event.pointerType !== 'mouse' || reducedMotion.matches) return
-      const s = settingsRef.current
-      if (!s.mouseInteraction || s.paused || !visible) return
-      const { left, top, right, bottom, width, height } = container.getBoundingClientRect()
-      const wasInside = pointerInside
-      pointerInside = event.clientX >= left && event.clientX <= right &&
-        event.clientY >= top && event.clientY <= bottom
-      if (!pointerInside) return
-      pointerTarget = (event.clientX - left - width / 2) / Math.max(1, height)
-      if (!wasInside && reach < 0.01) pointerX = pointerTarget
-    }
+      const rect = container.getBoundingClientRect();
+      pointer.x = event.clientX - rect.left;
+      pointer.y = event.clientY - rect.top;
+      const wasInside = pointer.inside;
+      pointer.inside = pointer.x >= 0 && pointer.y >= 0 && pointer.x <= rect.width && pointer.y <= rect.height;
+      if (pointer.inside && !wasInside) {
+        const s = settingsRef.current;
+        state.px = (pointer.x - rect.width / 2) / Math.max(1, rect.height);
+        state.py = s.flip ? 1 - pointer.y / Math.max(1, rect.height) : pointer.y / Math.max(1, rect.height);
+      }
+      if (!settingsRef.current.paused) wake();
+    };
+
+    const onPointerUp = (event: PointerEvent) => {
+      if (event.pointerType !== 'mouse') pointer.inside = false;
+    };
 
     const onPointerLeave = () => {
-      pointerInside = false
-    }
+      pointer.inside = false;
+    };
 
     const onVisibility = () => {
-      stop()
-      onPointerLeave()
-      wake()
-    }
+      last = 0;
+      wake();
+    };
 
-    const onContextLost = (event: Event) => {
-      event.preventDefault()
-      stop()
-      renderer = null
-      container.removeAttribute('data-aurora-ready')
-    }
-
-    const onContextRestored = () => {
-      renderer = createAurora(gl)
-      resize()
-    }
-
-    const observer = new IntersectionObserver(([entry]) => {
-      visible = entry.isIntersecting
-      onVisibility()
-    })
-    const resizeObserver = new ResizeObserver(resize)
-    observer.observe(container)
-    resizeObserver.observe(container)
-    reducedMotion.addEventListener('change', onVisibility)
-    document.addEventListener('visibilitychange', onVisibility)
-    document.documentElement.addEventListener('pointerleave', onPointerLeave)
-    window.addEventListener('pointermove', onPointerMove, { passive: true })
-    window.addEventListener('resize', resize)
-    canvas.addEventListener('webglcontextlost', onContextLost)
-    canvas.addEventListener('webglcontextrestored', onContextRestored)
-    resize()
-
-    refreshRef.current = () => {
-      const stops = settingsRef.current.colorStops
-      const key = JSON.stringify(stops)
-      if (paletteKey !== key) {
-        paletteKey = key
-        const next = readPalette(stops)
-        palette = next.palette
-        stopCount = next.stopCount
+    const resizeObserver = new ResizeObserver(resize);
+    resizeObserver.observe(container);
+    const intersection = new IntersectionObserver(entries => {
+      visible = entries.some(entry => entry.isIntersecting);
+      if (visible) {
+        last = 0;
+        wake();
       }
-      resize()
-    }
+    });
+    intersection.observe(container);
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
+    window.addEventListener('pointerdown', onPointerMove, { passive: true });
+    window.addEventListener('pointerup', onPointerUp, { passive: true });
+    window.addEventListener('pointercancel', onPointerUp, { passive: true });
+    document.documentElement.addEventListener('pointerleave', onPointerLeave);
+    document.addEventListener('visibilitychange', onVisibility);
+    resize();
+
+    let lastDpr = settingsRef.current.dpr;
+    wakeRef.current = () => {
+      const s = settingsRef.current;
+      if (s.dpr !== lastDpr) {
+        lastDpr = s.dpr;
+        resize();
+        return;
+      }
+      if (!raf) render();
+      wake();
+    };
 
     return () => {
-      stop()
-      refreshRef.current = null
-      container.removeAttribute('data-aurora-ready')
-      observer.disconnect()
-      resizeObserver.disconnect()
-      reducedMotion.removeEventListener('change', onVisibility)
-      document.removeEventListener('visibilitychange', onVisibility)
-      document.documentElement.removeEventListener('pointerleave', onPointerLeave)
-      window.removeEventListener('pointermove', onPointerMove)
-      window.removeEventListener('resize', resize)
-      canvas.removeEventListener('webglcontextlost', onContextLost)
-      canvas.removeEventListener('webglcontextrestored', onContextRestored)
-      renderer?.dispose()
-    }
-  }, [])
+      cancelAnimationFrame(raf);
+      wakeRef.current = null;
+      resizeObserver.disconnect();
+      intersection.disconnect();
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerdown', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('pointercancel', onPointerUp);
+      document.documentElement.removeEventListener('pointerleave', onPointerLeave);
+      document.removeEventListener('visibilitychange', onVisibility);
+      gl.deleteProgram(program.program);
+      gl.deleteBuffer(buffer);
+      gl.deleteVertexArray(vao);
+      if (!canvas.isConnected) gl.getExtension('WEBGL_lose_context')?.loseContext();
+    };
+  }, []);
+
+  useEffect(() => {
+    wakeRef.current?.();
+  });
 
   return (
-    <div className={`aurora-container ${className}`} ref={containerRef} style={style} aria-hidden="true">
-      <canvas className="aurora-canvas" ref={canvasRef} />
+    <div ref={containerRef} className={`aurora-container${className ? ` ${className}` : ''}`} style={style}>
+      <canvas ref={canvasRef} className="aurora-canvas" aria-hidden="true" />
     </div>
-  )
-}
+  );
+};
 
+export default Aurora;

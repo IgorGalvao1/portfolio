@@ -90,16 +90,19 @@ function Hero() {
         <div className="hero-sky">
           <Aurora
             colorStops={auroraColors}
-            amplitude={2.3}
-            blend={0.33}
-            height={0.47}
-            speed={1.15}
-            scale={1.08}
-            glow={0.46}
-            brightness={1.12}
-            layers={2}
-            intro={false}
-            dpr={1}
+            amplitude={1}
+            blend={0.5}
+            height={0.45}
+            speed={1}
+            glow={0.6}
+            scale={1}
+            brightness={1}
+            layers={1}
+            direction="top"
+            opacity={1}
+            mouseInteraction
+            intro
+            lightMode={false}
           />
         </div>
         <div className="wrap hero-inner">
