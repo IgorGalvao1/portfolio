@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef } from 'react'
-import { ExternalLink } from 'lucide-react'
+import { ArrowUp, ExternalLink } from 'lucide-react'
 import Aurora from './Aurora'
 import TechnologyGlobe from './TechnologyGlobe'
 import { enablePortfolioScroll, scrollToTop } from './portfolioScroll'
@@ -124,6 +124,8 @@ function Projects() {
 }
 
 function About() {
+  const backToTopLabel = 'Voltar ao início'
+
   return (
     <section
       id="sobre"
@@ -169,11 +171,24 @@ function About() {
             @igorgalvao1 <ExternalLink size={14} aria-hidden="true" />
           </a>
         </div>
-        <div className="back-to-top">
-          <a className="primary-button" href="#inicio" onClick={scrollToTop}>
-            Voltar para cima
-          </a>
-        </div>
+        <a
+          className="back-to-top"
+          href="#inicio"
+          onClick={scrollToTop}
+        >
+          <span className="back-to-top-word">
+            <span>{backToTopLabel}</span>
+            <span className="back-to-top-fill" aria-hidden="true">
+              {backToTopLabel}
+            </span>
+          </span>
+          <ArrowUp
+            className="back-to-top-arrow"
+            viewBox="2 2 20 20"
+            strokeWidth={1.5}
+            aria-hidden="true"
+          />
+        </a>
       </div>
     </section>
   )
