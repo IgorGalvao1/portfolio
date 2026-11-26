@@ -1,24 +1,15 @@
 import { useEffect, useState } from 'react'
 import { ExternalLink } from 'lucide-react'
 import Aurora from './Aurora'
+import TechnologySection from './TechnologySection'
 import { projects, type Project } from './projects'
 
 const github = 'https://github.com/igorgalvao1'
 const sections = [
   { id: 'inicio', label: 'Início' },
   { id: 'projetos', label: 'Projetos' },
+  { id: 'tecnologias', label: 'Tecnologias' },
   { id: 'sobre', label: 'Sobre' },
-]
-const technologies = [
-  ['javascript', 'JavaScript'],
-  ['vuedotjs', 'Vue.js'],
-  ['react', 'React'],
-  ['nextdotjs', 'Next.js'],
-  ['typescript', 'TypeScript'],
-  ['threedotjs', 'Three.js'],
-  ['gsap', 'GSAP'],
-  ['tailwindcss', 'Tailwind CSS'],
-  ['sass', 'Sass'],
 ]
 const auroraColors = ['#1e3d91', '#2586c7', '#69efbd', '#197685', '#202f76']
 
@@ -129,24 +120,6 @@ function Hero() {
               </a>
             </div>
           </div>
-        </div>
-      </div>
-      <div className="stack-bar">
-        <div className="wrap stack-inner">
-          <span className="stack-label" id="stack-label">Tecnologias</span>
-          <ul aria-labelledby="stack-label">
-            {technologies.map(([slug, name]) => (
-              <li key={slug}>
-                <img
-                  src={'/icons/' + slug + '.svg'}
-                  alt=""
-                  width="21"
-                  height="21"
-                />
-                {name}
-              </li>
-            ))}
-          </ul>
         </div>
       </div>
     </section>
@@ -320,6 +293,7 @@ export default function App() {
       <main id="main" tabIndex={-1}>
         <Hero />
         <Projects />
+        <TechnologySection />
         <About />
       </main>
     </>
