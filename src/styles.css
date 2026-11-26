@@ -105,8 +105,16 @@ ul {
   height: 16px;
   filter: invert(0.94);
 }
+.hero::after,
+.projects::after {
+  /* Give each stage a viewport of travel while the next section covers it. */
+  content: '';
+  display: block;
+  height: 100svh;
+}
 .hero-stage {
-  position: relative;
+  position: sticky;
+  top: 0;
   isolation: isolate;
   display: grid;
   min-height: 100svh;
@@ -141,6 +149,7 @@ ul {
   gap: 13px;
   color: var(--ink);
   font-size: 1rem;
+  font-weight: 700;
   letter-spacing: 0.16em;
   text-shadow: 0 1px 12px #080e16;
 }
@@ -193,44 +202,23 @@ button:active {
 .section {
   padding-block: clamp(60px, 5.8vw, 96px);
 }
-.projects-stage {
+.projects,
+.about {
+  margin-top: -100svh;
+}
+.projects {
   position: relative;
+  z-index: 1;
+}
+.projects-stage {
+  position: sticky;
+  min-height: 100svh;
+  top: calc(100svh - var(--projects-height));
   border-top: 1px solid var(--line);
   background: var(--bg);
 }
-@media (prefers-reduced-motion: no-preference) {
-  .hero::after,
-  .projects::after {
-    /* Give each stage a viewport of travel while the next section covers it. */
-    content: '';
-    display: block;
-    height: 100svh;
-  }
-  .hero-stage {
-    position: sticky;
-    top: 0;
-  }
-  .projects {
-    position: relative;
-    z-index: 1;
-  }
-  .projects-stage {
-    position: sticky;
-    min-height: 100svh;
-    top: calc(100svh - var(--projects-height));
-  }
-  .projects-stage:has(:focus-visible) {
-    top: auto;
-  }
-  .about {
-    position: relative;
-    z-index: 2;
-    min-height: 100svh;
-  }
-  .projects,
-  .about {
-    margin-top: -100svh;
-  }
+.projects-stage:has(:focus-visible) {
+  top: auto;
 }
 .work-heading h2 {
   margin-block: 0;
@@ -384,6 +372,9 @@ h3 {
   padding: 5px 10px;
 }
 .about {
+  position: relative;
+  z-index: 2;
+  min-height: 100svh;
   border-top: 1px solid var(--line);
   background: #0b131d;
 }
@@ -435,17 +426,26 @@ h3 {
   justify-content: center;
   margin-top: clamp(38px, 5vw, 72px);
 }
-@keyframes enter {
+@keyframes hero-reveal {
   from {
     opacity: 0;
-    transform: translateY(9px);
+    filter: blur(18px);
+    animation-timing-function: var(--ease-out);
+  }
+  15% {
+    opacity: 1;
+    filter: blur(17px);
+  }
+  to {
+    opacity: 1;
+    filter: none;
   }
 }
 .hero-copy > * {
-  animation: enter 480ms var(--ease-out) backwards;
+  animation: hero-reveal 1000ms linear 200ms backwards;
 }
 .hero-copy h1 {
-  animation-delay: 50ms;
+  animation-delay: 250ms;
 }
 @media (max-width: 900px) {
   .wrap {
