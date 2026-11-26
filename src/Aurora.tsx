@@ -334,7 +334,6 @@ const Aurora = ({
     gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
 
     const probe = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
-    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
     const cache = new Map<string, number[]>();
     const parse = (value: string): number[] => {
       const cached = cache.get(value);
@@ -360,7 +359,7 @@ const Aurora = ({
       px: 0,
       py: 0.5,
       reach: 0,
-      reveal: settingsRef.current.intro && !reduce ? 0 : 1
+      reveal: settingsRef.current.intro ? 0 : 1
     };
     let raf = 0;
     let last = 0;
@@ -404,9 +403,8 @@ const Aurora = ({
         last = 0;
         return;
       }
-      const motion = reduce ? 0 : 1;
-      state.clock += dt * s.speed * motion;
-      const engaged = s.mouseInteraction && pointer.inside && !reduce;
+      state.clock += dt * s.speed;
+      const engaged = s.mouseInteraction && pointer.inside;
       const follow = 1 - Math.exp(-dt / 0.6);
       if (engaged) {
         const tx = (pointer.x - view.width / 2) / view.height;
@@ -415,7 +413,7 @@ const Aurora = ({
         state.py += (ty - state.py) * follow;
       }
       state.reach += ((engaged ? 1 : 0) - state.reach) * (1 - Math.exp(-dt / (engaged ? 0.9 : 1.4)));
-      if (!s.intro || reduce) state.reveal = 1;
+      if (!s.intro) state.reveal = 1;
       else if (state.reveal < 1) state.reveal = Math.min(1, state.reveal + dt / INTRO_SECONDS);
       render();
       raf = requestAnimationFrame(frame);

@@ -6,7 +6,6 @@
   --muted: #a7b3c1;
   --line: #213040;
   --accent: #2992d8;
-  --header-height: 72px;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --mono: 'IBM Plex Mono', monospace;
   font-family: 'Geist Variable', Arial, sans-serif;
@@ -21,7 +20,6 @@
 }
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: calc(var(--header-height) + 8px);
 }
 html:has(:focus-visible) {
   scroll-behavior: auto;
@@ -90,47 +88,12 @@ ul {
 .skip-link:focus {
   transform: none;
 }
-.site-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: #080e16f5;
-  border-bottom: 1px solid #bcd9f31a;
-}
-@supports (backdrop-filter: blur(16px)) {
-  .site-header {
-    background: #080e16b6;
-    backdrop-filter: blur(16px);
-  }
-}
-.header-inner {
-  min-height: calc(var(--header-height) - 1px);
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-}
-.brand,
-.github-button,
-.site-header nav,
-.site-header nav a,
 .primary-button,
 .text-button,
 .profile-link {
   display: inline-flex;
   align-items: center;
 }
-.brand {
-  gap: 14px;
-  justify-self: start;
-  min-height: 44px;
-}
-.monogram {
-  font-size: 34px;
-  font-weight: 770;
-  line-height: 1;
-  letter-spacing: -0.105em;
-}
-.monogram span,
 .punctuation {
   color: var(--accent);
 }
@@ -138,40 +101,6 @@ ul {
 .project-topline {
   font-family: var(--mono);
 }
-.site-header nav {
-  gap: 4px;
-}
-.site-header nav a {
-  justify-content: center;
-  min-height: 44px;
-  padding-inline: 16px;
-  border-radius: 8px;
-  color: var(--muted);
-  font-size: 0.9rem;
-  font-weight: 550;
-  transition: color 180ms, background-color 180ms;
-}
-.site-header nav a:hover,
-.site-header nav a[aria-current] {
-  color: var(--ink);
-  background: #a9c9ec12;
-}
-.github-button {
-  justify-self: end;
-  gap: 9px;
-  min-height: 44px;
-  padding-inline: 14px;
-  border: 1px solid #bcd9f333;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 550;
-  transition: background-color 180ms, border-color 180ms, transform 140ms var(--ease-out);
-}
-.github-button:hover {
-  background: #a9c9ec12;
-  border-color: #bcd9f36b;
-}
-.github-button img,
 .profile-link img {
   width: 16px;
   height: 16px;
@@ -181,8 +110,6 @@ ul {
   display: flex;
   flex-direction: column;
   min-height: 100svh;
-  margin-block-start: calc(-1 * var(--header-height));
-  padding-block-start: var(--header-height);
   border-bottom: 1px solid var(--line);
 }
 .hero-stage {
@@ -193,7 +120,7 @@ ul {
 }
 .hero-sky {
   position: absolute;
-  inset: calc(-1 * var(--header-height)) 0 auto;
+  inset: 0 0 auto;
   height: 600px;
   z-index: -1;
   overflow: hidden;
@@ -274,7 +201,6 @@ h1 {
   background: #3299de;
 }
 .primary-button:active,
-.github-button:active,
 button:active {
   transform: translateY(1px);
 }
@@ -353,9 +279,6 @@ h2 {
   font-size: 0.875rem;
   font-weight: 500;
 }
-.project-link {
-  scroll-margin-block: 85px 10px;
-}
 .project-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -367,6 +290,7 @@ h2 {
 .project-link {
   display: block;
   width: 100%;
+  scroll-margin-block: 10px;
 }
 .project-image {
   position: relative;
@@ -508,22 +432,20 @@ h3 {
     transform: translateY(9px);
   }
 }
-@media (prefers-reduced-motion: no-preference) {
-  .hero-copy > * {
-    animation: enter 480ms var(--ease-out) backwards;
-  }
-  .hero-copy h1 {
-    animation-delay: 50ms;
-  }
-  .hero-lead {
-    animation-delay: 100ms;
-  }
-  .actions {
-    animation-delay: 150ms;
-  }
-  .actions:focus-within {
-    animation: none;
-  }
+.hero-copy > * {
+  animation: enter 480ms var(--ease-out) backwards;
+}
+.hero-copy h1 {
+  animation-delay: 50ms;
+}
+.hero-lead {
+  animation-delay: 100ms;
+}
+.actions {
+  animation-delay: 150ms;
+}
+.actions:focus-within {
+  animation: none;
 }
 @media (max-width: 900px) {
   .wrap {
@@ -544,42 +466,8 @@ h3 {
   }
 }
 @media (max-width: 700px) {
-  :root {
-    --header-height: 61px;
-  }
   .wrap {
     width: calc(100% - 40px);
-  }
-  .header-inner {
-    grid-template-columns: auto 1fr auto;
-    gap: 7px;
-  }
-  .monogram {
-    font-size: 31px;
-  }
-  .site-header nav {
-    justify-content: center;
-    gap: 2px;
-  }
-  .site-header nav a {
-    padding-inline: clamp(4px, 1.25vw, 12px);
-    font-size: clamp(0.76rem, 2.2vw, 0.86rem);
-  }
-  .github-button {
-    width: 44px;
-    padding: 0;
-    justify-content: center;
-  }
-  .github-button span {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-  }
-  .github-button img {
-    width: 19px;
-    height: 19px;
   }
   .hero-inner {
     padding-block: clamp(74px, 13svh, 110px) 77px;
@@ -624,9 +512,6 @@ h3 {
   .wrap {
     width: calc(100% - 32px);
   }
-  .header-inner {
-    gap: 3px;
-  }
   .hero-role {
     gap: 8px;
     font-size: 0.72rem;
@@ -644,38 +529,10 @@ h3 {
   }
 }
 @media (max-width: 320px) {
-  .header-inner {
-    width: calc(100% - 20px);
-  }
-  .site-header nav {
-    gap: 0;
-  }
-  .site-header nav a {
-    padding-inline: 3px;
-  }
   .work-heading {
     grid-template-columns: minmax(0, 1fr);
   }
   .filters {
     flex-wrap: wrap;
-  }
-}
-@media (max-width: 300px) {
-  .header-inner {
-    width: calc(100% - 12px);
-  }
-  .site-header nav a {
-    padding-inline: 1px;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
   }
 }

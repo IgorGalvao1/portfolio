@@ -1,82 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { ExternalLink } from 'lucide-react'
 import Aurora from './Aurora'
 import TechnologyGlobe from './TechnologyGlobe'
 import { projects, type Project } from './projects'
 
 const github = 'https://github.com/igorgalvao1'
-const sections = [
-  { id: 'inicio', label: 'Início' },
-  { id: 'projetos', label: 'Projetos' },
-  { id: 'sobre', label: 'Sobre' },
-]
 const auroraColors = ['#1e3d91', '#2586c7', '#69efbd', '#197685', '#202f76']
-
-function Brand() {
-  return (
-    <a className="brand" href="#inicio" aria-label="Igor Galvão, início">
-      <span className="monogram" aria-hidden="true">
-        ig<span>.</span>
-      </span>
-    </a>
-  )
-}
-
-function Header() {
-  const [active, setActive] = useState('inicio')
-  useEffect(() => {
-    const sync = () => {
-      if (
-        window.scrollY + innerHeight >=
-        document.documentElement.scrollHeight - 2
-      ) {
-        setActive('sobre')
-        return
-      }
-      const threshold = Math.min(innerHeight * 0.35, 210)
-      const current = sections.filter(
-        ({ id }) =>
-          (document.getElementById(id)?.getBoundingClientRect().top ??
-            Infinity) <= threshold,
-      )
-      setActive(current.at(-1)?.id ?? 'inicio')
-    }
-    sync()
-    window.addEventListener('scroll', sync, { passive: true })
-    window.addEventListener('resize', sync)
-    return () => {
-      window.removeEventListener('scroll', sync)
-      window.removeEventListener('resize', sync)
-    }
-  }, [])
-  return (
-    <header className="site-header">
-      <div className="wrap header-inner">
-        <Brand />
-        <nav aria-label="Navegação principal">
-          {sections.map(({ id, label }) => (
-            <a
-              key={id}
-              href={'#' + id}
-              aria-current={active === id ? 'location' : undefined}
-            >
-              {label}
-            </a>
-          ))}
-        </nav>
-        <a
-          className="github-button"
-          href={github}
-          target="_blank"
-          rel="noreferrer"
-        >
-          <img src="/icons/github.svg" alt="" width="16" height="16" />{' '}
-          <span>GitHub</span>
-        </a>
-      </div>
-    </header>
-  )
-}
 
 function Hero() {
   return (
@@ -188,7 +117,7 @@ function Projects() {
   return (
     <section
       id="projetos"
-      className="work section"
+      className="section"
       aria-labelledby="work-title"
     >
       <div className="wrap">
@@ -289,7 +218,6 @@ export default function App() {
       <a className="skip-link" href="#main">
         Pular para o conteúdo
       </a>
-      <Header />
       <main id="main" tabIndex={-1}>
         <Hero />
         <Projects />
