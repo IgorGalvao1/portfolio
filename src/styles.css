@@ -114,6 +114,20 @@ ul {
   grid-row: 2;
   text-align: center;
 }
+.hero-word,
+.hero-word > span {
+  display: inline-block;
+}
+/* Give GSAP a chance to start before showing the pre-rendered text. */
+.hero-copy:not([data-intro-ready]) {
+  opacity: 0;
+  animation: hero-intro-pending 0s 650ms forwards;
+}
+@keyframes hero-intro-pending {
+  to {
+    opacity: 1;
+  }
+}
 .eyebrow {
   text-transform: uppercase;
   letter-spacing: 0.11em;
@@ -432,27 +446,6 @@ h3 {
   .back-to-top:active .back-to-top-arrow {
     transform: scale(0.95);
   }
-}
-@keyframes hero-reveal {
-  from {
-    opacity: 0;
-    filter: blur(18px);
-    animation-timing-function: var(--ease-out);
-  }
-  15% {
-    opacity: 1;
-    filter: blur(17px);
-  }
-  to {
-    opacity: 1;
-    filter: none;
-  }
-}
-.hero-copy > * {
-  animation: hero-reveal 1000ms linear 200ms backwards;
-}
-.hero-copy h1 {
-  animation-delay: 250ms;
 }
 @media (max-width: 900px) {
   .wrap {

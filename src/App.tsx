@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef } from 'react'
+import { gsap } from 'gsap'
 import { ArrowUp, ExternalLink } from 'lucide-react'
 import Aurora from './Aurora'
 import TechnologyGlobe from './TechnologyGlobe'
@@ -9,13 +10,51 @@ const github = 'https://github.com/igorgalvao1'
 const auroraColors = ['#1e3d91', '#2586c7', '#69efbd', '#197685', '#202f76']
 
 function Hero() {
+  const copyRef = useRef<HTMLDivElement>(null)
+
+  useLayoutEffect(() => {
+    const copy = copyRef.current
+    if (!copy) return
+
+    const canPlay = getComputedStyle(copy).opacity === '0'
+    copy.dataset.introReady = ''
+
+    const motion = gsap.context(() => {
+      if (!canPlay) return
+
+      gsap
+        .timeline({ delay: 0.12 })
+        .set('.hero-word', { clipPath: 'inset(-0.14em -0.2em)' })
+        .from('.hero-word > span', {
+          yPercent: 100,
+          opacity: 0,
+          duration: 0.78,
+          ease: 'power3.out',
+          stagger: 0.07,
+          clearProps: 'transform,opacity',
+        })
+        .from('.hero-role', {
+          y: 8,
+          opacity: 0,
+          duration: 0.44,
+          ease: 'power2.out',
+          clearProps: 'transform,opacity',
+        }, 0.23)
+        .set('.hero-word', { clearProps: 'clipPath' })
+    }, copy)
+
+    return () => {
+      motion.revert()
+      delete copy.dataset.introReady
+    }
+  }, [])
+
   return (
     <section
       className="hero"
       id="inicio"
       aria-labelledby="hero-title"
       tabIndex={-1}
-      data-enter
     >
       <div className="hero-stage">
         <div className="hero-sky">
@@ -37,9 +76,16 @@ function Hero() {
           />
         </div>
         <div className="wrap hero-inner">
-          <div className="hero-copy">
+          <div className="hero-copy" ref={copyRef}>
             <p className="eyebrow hero-role">Desenvolvedor front-end</p>
-            <h1 id="hero-title">Igor Galvão</h1>
+            <h1 id="hero-title">
+              <span className="hero-word">
+                <span>Igor</span>
+              </span>{' '}
+              <span className="hero-word">
+                <span>Galvão</span>
+              </span>
+            </h1>
           </div>
         </div>
       </div>
