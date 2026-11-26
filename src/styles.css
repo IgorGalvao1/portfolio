@@ -89,7 +89,6 @@ ul {
   transform: none;
 }
 .primary-button,
-.text-button,
 .profile-link {
   display: inline-flex;
   align-items: center;
@@ -106,17 +105,11 @@ ul {
   height: 16px;
   filter: invert(0.94);
 }
-.hero {
-  display: flex;
-  flex-direction: column;
-  min-height: 100svh;
-  border-bottom: 1px solid var(--line);
-}
 .hero-stage {
   position: relative;
   isolation: isolate;
   display: grid;
-  flex: 1;
+  min-height: 100svh;
 }
 .hero-sky {
   position: absolute;
@@ -128,11 +121,10 @@ ul {
 }
 .hero-inner {
   display: grid;
-  place-items: center;
-  padding-block: clamp(100px, 15svh, 168px) clamp(90px, 12svh, 135px);
+  grid-template-rows: 7fr auto 3fr;
 }
 .hero-copy {
-  width: 100%;
+  grid-row: 2;
   text-align: center;
 }
 .eyebrow {
@@ -154,7 +146,7 @@ ul {
 }
 
 h1 {
-  margin-block: 14px 23px;
+  margin-top: 14px;
   color: var(--ink);
   font-size: clamp(70px, 10.25vw, 156px);
   font-weight: 550;
@@ -162,27 +154,7 @@ h1 {
   line-height: 1.02;
   text-shadow: 0 4px 40px #080e163d;
 }
-.hero-lead {
-  max-width: 40ch;
-  margin-inline: auto;
-  color: #b7c4d0;
-  font-size: clamp(1rem, 1.47vw, 1.25rem);
-  line-height: 1.58;
-  text-wrap: pretty;
-}
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
-  margin-top: 31px;
-}
-.actions > a {
-  min-inline-size: 128px;
-}
 .primary-button,
-.text-button,
 .profile-link {
   justify-content: center;
   gap: 12px;
@@ -204,13 +176,11 @@ h1 {
 button:active {
   transform: translateY(1px);
 }
-.text-button,
 .profile-link {
   border: 1px solid #2992d8;
   color: var(--ink);
   transition: background-color 180ms, border-color 180ms;
 }
-.text-button:hover,
 .profile-link:hover {
   background: #2586c71a;
   border-color: var(--accent);
@@ -222,6 +192,45 @@ button:active {
 }
 .section {
   padding-block: clamp(60px, 5.8vw, 96px);
+}
+.projects-stage {
+  position: relative;
+  border-top: 1px solid var(--line);
+  background: var(--bg);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero::after,
+  .projects::after {
+    /* Give each stage a viewport of travel while the next section covers it. */
+    content: '';
+    display: block;
+    height: 100svh;
+  }
+  .hero-stage {
+    position: sticky;
+    top: 0;
+  }
+  .projects {
+    position: relative;
+    z-index: 1;
+  }
+  .projects-stage {
+    position: sticky;
+    min-height: 100svh;
+    top: calc(100svh - var(--projects-height));
+  }
+  .projects-stage:has(:focus-visible) {
+    top: auto;
+  }
+  .about {
+    position: relative;
+    z-index: 2;
+    min-height: 100svh;
+  }
+  .projects,
+  .about {
+    margin-top: -100svh;
+  }
 }
 .work-heading h2 {
   margin-block: 0;
@@ -438,15 +447,6 @@ h3 {
 .hero-copy h1 {
   animation-delay: 50ms;
 }
-.hero-lead {
-  animation-delay: 100ms;
-}
-.actions {
-  animation-delay: 150ms;
-}
-.actions:focus-within {
-  animation: none;
-}
 @media (max-width: 900px) {
   .wrap {
     width: calc(100% - 64px);
@@ -469,19 +469,8 @@ h3 {
   .wrap {
     width: calc(100% - 40px);
   }
-  .hero-inner {
-    padding-block: clamp(74px, 13svh, 110px) 77px;
-  }
   h1 {
     font-size: clamp(50px, 13vw, 88px);
-    margin-block: 14px 18px;
-  }
-  .hero-lead {
-    max-width: 31ch;
-  }
-  .actions {
-    margin-top: 24px;
-    gap: 10px;
   }
   .section {
     padding-block: 48px;

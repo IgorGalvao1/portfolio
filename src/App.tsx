@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ExternalLink } from 'lucide-react'
 import Aurora from './Aurora'
 import TechnologyGlobe from './TechnologyGlobe'
@@ -38,18 +38,6 @@ function Hero() {
           <div className="hero-copy">
             <p className="eyebrow hero-role">Desenvolvedor front-end</p>
             <h1 id="hero-title">Igor Galvão</h1>
-            <p className="hero-lead">
-              Crio interfaces para a web, da visualização de dados agrícolas a
-              experiências interativas em 3D.
-            </p>
-            <div className="actions">
-              <a className="primary-button" href="#projetos">
-                Ver projetos
-              </a>
-              <a className="text-button" href="#sobre">
-                Sobre mim
-              </a>
-            </div>
           </div>
         </div>
       </div>
@@ -109,49 +97,65 @@ function ProjectCard({ project }: { project: Project }) {
 }
 
 function Projects() {
+  const stageRef = useRef<HTMLDivElement>(null)
   const [filter, setFilter] =
     useState<(typeof filters)[number]['category']>(null)
   const visible = projects.filter(
     (project) => !filter || project.category === filter,
   )
+
+  useEffect(() => {
+    const stage = stageRef.current
+    if (!stage) return
+
+    const observer = new ResizeObserver(([entry]) => {
+      const height = entry.borderBoxSize[0].blockSize
+      stage.style.setProperty('--projects-height', `${height}px`)
+    })
+    observer.observe(stage, { box: 'border-box' })
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <section
       id="projetos"
-      className="section"
+      className="projects"
       aria-labelledby="work-title"
     >
-      <div className="wrap">
-        <div className="work-heading">
-          <h2 id="work-title">
-            Projetos selecionados<span className="punctuation">.</span>
-          </h2>
-          <div className="filters" role="group" aria-label="Filtrar projetos">
-            {filters.map((item) => (
-              <button
-                type="button"
-                key={item.title}
-                aria-pressed={filter === item.category}
-                onClick={() => setFilter(item.category)}
-              >
-                {item.title}
-                <span>
-                  {String(
-                    projects.filter(
-                      (p) => !item.category || p.category === item.category,
-                    ).length,
-                  ).padStart(2, '0')}
-                </span>
-              </button>
+      <div className="projects-stage section" ref={stageRef}>
+        <div className="wrap">
+          <div className="work-heading">
+            <h2 id="work-title">
+              Projetos selecionados<span className="punctuation">.</span>
+            </h2>
+            <div className="filters" role="group" aria-label="Filtrar projetos">
+              {filters.map((item) => (
+                <button
+                  type="button"
+                  key={item.title}
+                  aria-pressed={filter === item.category}
+                  onClick={() => setFilter(item.category)}
+                >
+                  {item.title}
+                  <span>
+                    {String(
+                      projects.filter(
+                        (p) => !item.category || p.category === item.category,
+                      ).length,
+                    ).padStart(2, '0')}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <p role="status" className="sr-only">
+            {visible.length} projetos exibidos.
+          </p>
+          <div className="project-grid">
+            {visible.map((project) => (
+              <ProjectCard key={project.id} project={project} />
             ))}
           </div>
-        </div>
-        <p role="status" className="sr-only">
-          {visible.length} projetos exibidos.
-        </p>
-        <div className="project-grid">
-          {visible.map((project) => (
-            <ProjectCard key={project.id} project={project} />
-          ))}
         </div>
       </div>
     </section>
