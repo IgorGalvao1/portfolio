@@ -401,50 +401,57 @@ h3 {
 .back-to-top-arrow {
   width: 1em;
   height: 1em;
-  color: var(--ink);
+  background-color: var(--ink);
+  mask: url('/icons/arrow-up.svg') center / contain no-repeat;
 }
 .back-to-top-word {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  padding-top: 0.08em;
   font-weight: 800;
-  letter-spacing: -0.06em;
+  letter-spacing: -0.03em;
   line-height: 1;
   text-transform: uppercase;
   white-space: nowrap;
 }
-.back-to-top-word > span {
-  grid-area: 1 / 1;
-  padding-top: 0.08em;
-}
-.back-to-top-fill {
-  color: var(--accent);
-  clip-path: inset(100% -0.1em 0);
-  pointer-events: none;
-  user-select: none;
-}
 .back-to-top:is(:focus-visible, :active) .back-to-top-word {
   color: var(--accent);
 }
-@media (hover: hover) and (pointer: fine) {
-  .back-to-top:hover .back-to-top-fill {
-    clip-path: inset(-0.1em -0.1em 0);
+@media (forced-colors: active) {
+  .back-to-top-arrow {
+    forced-color-adjust: none;
+    background-color: LinkText;
   }
+}
+@media (hover: hover) and (pointer: fine) and (forced-colors: none) {
+  .back-to-top-word,
+  .back-to-top-arrow {
+    background: linear-gradient(
+      to top,
+      var(--accent) calc(50% - 0.5px),
+      var(--ink) calc(50% + 0.5px)
+    ) center top / 100% 220% no-repeat;
+  }
+  .back-to-top-word {
+    background-clip: text;
+    color: transparent;
+  }
+  .back-to-top:is(:hover, :focus-visible, :active) .back-to-top-word {
+    color: transparent;
+  }
+  .back-to-top:is(:hover, :focus-visible, :active) .back-to-top-word,
   .back-to-top:hover .back-to-top-arrow {
-    color: var(--accent);
+    background-position: center bottom;
   }
 }
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  .back-to-top-fill {
-    transition: clip-path 260ms var(--ease-out);
-  }
+  .back-to-top-word,
   .back-to-top-arrow {
-    transition: transform 160ms var(--ease-out);
+    transition: background-position 260ms var(--ease-out);
   }
-  .back-to-top:hover .back-to-top-arrow {
-    transform: translateY(-15%);
+  .back-to-top:hover :is(.back-to-top-word, .back-to-top-arrow) {
+    transition: background-position 460ms linear;
   }
-  .back-to-top:active .back-to-top-arrow {
-    transform: scale(0.95);
+  .back-to-top:is(:focus-visible, :active) .back-to-top-word {
+    transition-duration: 0s;
   }
 }
 @media (max-width: 900px) {
