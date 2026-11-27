@@ -51,6 +51,8 @@ type Program = { program: WebGLProgram; uniforms: Record<string, WebGLUniformLoc
 const MAX_STOPS = 5;
 const MAX_LAYERS = 3;
 const INTRO_SECONDS = 2.4;
+const COMPACT_DPR = 0.75;
+const POINTER_EPSILON = 0.001;
 
 const VERTEX = `#version 300 es
 in vec2 aPosition;
@@ -73,7 +75,7 @@ uniform float uGlow;
 uniform float uBrightness;
 uniform int uLayers;
 uniform float uFlip;
-uniform vec3 uPointer;
+uniform vec2 uPointer;
 uniform float uReveal;
 uniform float uOpacity;
 uniform float uLightMode;
@@ -153,7 +155,11 @@ void main() {
   float u = frag.x / uResolution.x;
   float X = (frag.x - uResolution.x * 0.5) / uResolution.y;
   float t = uTime;
-  float reach = uPointer.z * exp(-pow((X - uPointer.x) / 0.38, 2.0));
+  float reach = 0.0;
+  if (uPointer.y > 0.0) {
+    float distance = (X - uPointer.x) / 0.38;
+    reach = uPointer.y * exp(-distance * distance);
+  }
 
   vec3 glow = vec3(0.0);
   float cover = 0.0;
@@ -172,11 +178,14 @@ void main() {
     float soft = (0.04 + uBlend * 0.16) * (1.0 + layer * 0.9);
     float rise = hem - y;
     float low = -soft - uGlow * 0.14;
+    if (rise <= low) continue;
     float high = 0.26 + soft * 0.6;
     float body = pow(smootherstep(low, high, rise), 1.5 + uGlow * 0.6);
     float lobes = 0.86 + 0.14 * snoise(vec2(X * 0.9 * uScale - pace * 0.025 + seed, y * 0.3 + pace * 0.04));
     float alpha = body * lobes * (layer < 0.5 ? 1.0 : 0.32 / layer);
-    alpha = clamp(alpha * (1.0 + reach * 0.25 * smootherstep(0.9, 0.0, abs(y - hem))), 0.0, 1.0);
+    if (reach > 0.0) {
+      alpha = clamp(alpha * (1.0 + reach * 0.25 * smootherstep(0.9, 0.0, abs(rise))), 0.0, 1.0);
+    }
 
     vec3 tint = ramp(u + 0.05 * sin(pace * 0.08 + layer * 2.3) + layer * 0.1 + max(rise, 0.0) * 0.05);
     glow = 1.0 - (1.0 - glow) * (1.0 - tint * alpha);
@@ -187,7 +196,7 @@ void main() {
   float strength = clamp(uBrightness, 0.0, 2.0);
   glow *= fade * min(strength, 1.0);
   cover *= fade * min(strength, 1.0);
-  glow = 1.0 - pow(1.0 - glow, vec3(max(strength, 1.0)));
+  if (strength > 1.0) glow = 1.0 - pow(1.0 - glow, vec3(strength));
   float dither = (hash(frag) - 0.5) / 255.0;
 
   if (uLightMode > 0.5) {
@@ -327,15 +336,19 @@ const Aurora = ({
 
     const buffer = gl.createBuffer();
     const vao = gl.createVertexArray();
+    gl.useProgram(program.program);
     gl.bindVertexArray(vao);
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
     gl.enableVertexAttribArray(0);
     gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
 
-    const probe = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+    const sample = document.createElement('canvas');
+    sample.width = 1;
+    sample.height = 1;
+    const probe = sample.getContext('2d', { willReadFrequently: true });
     const cache = new Map<string, number[]>();
-    const parse = (value: string): number[] => {
+    const parseStop = (value: string): number[] => {
       const cached = cache.get(value);
       if (cached) return cached;
       let rgb = [1, 1, 1];
@@ -347,35 +360,35 @@ const Aurora = ({
         const [r, g, b] = probe.getImageData(0, 0, 1, 1).data;
         rgb = [r / 255, g / 255, b / 255];
       }
-      cache.set(value, rgb);
-      return rgb;
+      const stop = toOklch(rgb);
+      cache.set(value, stop);
+      return stop;
     };
     const palette = new Float32Array(MAX_STOPS * 3);
 
-    const view = { width: 1, height: 1 };
-    const pointer = { x: 0, y: 0, inside: false };
+    const compact = window.matchMedia('(max-width: 700px), (pointer: coarse)');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const pointer = { x: 0, inside: false };
     const state = {
       clock: 0,
       px: 0,
-      py: 0.5,
       reach: 0,
       reveal: settingsRef.current.intro ? 0 : 1
     };
+    let previousSettings: Settings | undefined;
+    let sizePending = true;
     let raf = 0;
-    let last = 0;
-    let visible = true;
+    let lastFrame: number | undefined;
+    let nextFrame: number | undefined;
+    let visible = false;
 
-    const render = () => {
-      const s = settingsRef.current;
-      unwrapHues(s.stops.map(value => toOklch(parse(value)))).forEach((stop, index) => palette.set(stop, index * 3));
-      const reveal = state.reveal;
-      gl.viewport(0, 0, canvas.width, canvas.height);
-      gl.useProgram(program.program);
-      gl.bindVertexArray(vao);
-      gl.uniform2f(u.uResolution, canvas.width, canvas.height);
-      gl.uniform1f(u.uTime, s.time !== undefined ? s.time * s.speed * 0.1 : state.clock);
-      gl.uniform3fv(u.uStops, palette);
-      gl.uniform1i(u.uStopCount, s.stops.length);
+    const updateSettings = (s: Settings) => {
+      const previousStops = previousSettings?.stops;
+      if (!previousStops || previousStops.length !== s.stops.length || s.stops.some((stop, i) => stop !== previousStops[i])) {
+        unwrapHues(s.stops.map(parseStop)).forEach((stop, i) => palette.set(stop, i * 3));
+        gl.uniform3fv(u.uStops, palette);
+        gl.uniform1i(u.uStopCount, s.stops.length);
+      }
       gl.uniform1f(u.uAmplitude, s.amplitude);
       gl.uniform1f(u.uBlend, s.blend);
       gl.uniform1f(u.uHeight, s.height);
@@ -384,124 +397,139 @@ const Aurora = ({
       gl.uniform1f(u.uBrightness, s.brightness);
       gl.uniform1i(u.uLayers, s.layers);
       gl.uniform1f(u.uFlip, s.flip);
-      gl.uniform3f(u.uPointer, state.px, state.py, state.reach);
-      gl.uniform1f(u.uReveal, 1 - Math.pow(1 - reveal, 3));
       gl.uniform1f(u.uOpacity, s.opacity);
       gl.uniform1f(u.uLightMode, s.lightMode ? 1 : 0);
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
     };
 
-    const frame = (now: number) => {
-      raf = 0;
-      if (!visible || document.hidden) return;
-      const s = settingsRef.current;
-      const dt = last ? clamp((now - last) / 1000, 0.0005, 0.05) : 1 / 60;
-      last = now;
-      if (s.paused) {
-        state.reveal = 1;
-        render();
-        last = 0;
-        return;
-      }
-      state.clock += dt * s.speed;
-      const engaged = s.mouseInteraction && pointer.inside;
-      const follow = 1 - Math.exp(-dt / 0.6);
-      if (engaged) {
-        const tx = (pointer.x - view.width / 2) / view.height;
-        const ty = s.flip ? 1 - pointer.y / view.height : pointer.y / view.height;
-        state.px += (tx - state.px) * follow;
-        state.py += (ty - state.py) * follow;
-      }
-      state.reach += ((engaged ? 1 : 0) - state.reach) * (1 - Math.exp(-dt / (engaged ? 0.9 : 1.4)));
-      if (!s.intro) state.reveal = 1;
-      else if (state.reveal < 1) state.reveal = Math.min(1, state.reveal + dt / INTRO_SECONDS);
-      render();
-      raf = requestAnimationFrame(frame);
+    const updateSize = (s: Settings) => {
+      const defaultDpr = Math.min(window.devicePixelRatio || 1, compact.matches ? COMPACT_DPR : 2);
+      const ratio = Math.min(s.dpr || defaultDpr, 2);
+      const width = Math.max(1, Math.round(container.clientWidth * ratio));
+      const height = Math.max(1, Math.round(container.clientHeight * ratio));
+      if (canvas.width !== width) canvas.width = width;
+      if (canvas.height !== height) canvas.height = height;
+      gl.viewport(0, 0, width, height);
+      gl.uniform2f(u.uResolution, width, height);
+      sizePending = false;
     };
 
     const wake = () => {
       if (!raf && visible && !document.hidden) raf = requestAnimationFrame(frame);
     };
 
-    const resize = () => {
+    const frame = (now: number) => {
+      raf = 0;
+      if (!visible || document.hidden) return;
+      if (nextFrame !== undefined && now + 1 < nextFrame) {
+        wake();
+        return;
+      }
+
       const s = settingsRef.current;
-      const width = Math.max(1, container.clientWidth);
-      const height = Math.max(1, container.clientHeight);
-      const ratio = Math.min(s.dpr || window.devicePixelRatio || 1, 2);
-      view.width = width;
-      view.height = height;
-      canvas.width = Math.max(1, Math.round(width * ratio));
-      canvas.height = Math.max(1, Math.round(height * ratio));
-      render();
-      wake();
+      if (sizePending || s.dpr !== previousSettings?.dpr) updateSize(s);
+      if (s !== previousSettings) updateSettings(s);
+      previousSettings = s;
+
+      const dt = lastFrame === undefined ? 1 / 60 : clamp((now - lastFrame) / 1000, 0.0005, 0.05);
+      const prefersStill = reducedMotion.matches;
+      const still = s.paused || prefersStill;
+      if (still || !s.intro) state.reveal = 1;
+      if (prefersStill) {
+        pointer.inside = false;
+        state.reach = 0;
+      }
+      const targetReach = s.mouseInteraction && pointer.inside ? 1 : 0;
+      if (!still) {
+        state.clock += dt * s.speed;
+        state.reveal = Math.min(1, state.reveal + dt / INTRO_SECONDS);
+        if (targetReach) state.px += (pointer.x - state.px) * (1 - Math.exp(-dt / 0.6));
+        if (state.reach !== targetReach) {
+          const follow = 1 - Math.exp(-dt / (targetReach ? 0.9 : 1.4));
+          state.reach += (targetReach - state.reach) * follow;
+          if (Math.abs(targetReach - state.reach) < POINTER_EPSILON) state.reach = targetReach;
+        }
+      }
+
+      gl.uniform1f(u.uTime, s.time !== undefined ? s.time * s.speed * 0.1 : state.clock);
+      gl.uniform2f(u.uPointer, state.px, state.reach);
+      gl.uniform1f(u.uReveal, 1 - Math.pow(1 - state.reveal, 3));
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+      const interval = 1000 / (compact.matches ? 30 : 60);
+      // Advance from the previous deadline so refresh rates like 90 Hz hold the target cadence.
+      nextFrame = Math.max((nextFrame ?? now) + interval, now);
+      const pointerMoving = state.reach !== targetReach || (targetReach && Math.abs(pointer.x - state.px) > POINTER_EPSILON);
+      const timeMoving = s.time === undefined && s.speed !== 0;
+      if (!still && (timeMoving || pointerMoving || state.reveal < 1)) {
+        lastFrame = now;
+        wake();
+      } else {
+        lastFrame = undefined;
+      }
     };
 
     const onPointerMove = (event: PointerEvent) => {
+      const s = settingsRef.current;
+      if (event.pointerType !== 'mouse' || !visible || document.hidden || !s.mouseInteraction || s.paused || reducedMotion.matches) return;
       const rect = container.getBoundingClientRect();
-      pointer.x = event.clientX - rect.left;
-      pointer.y = event.clientY - rect.top;
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
       const wasInside = pointer.inside;
-      pointer.inside = pointer.x >= 0 && pointer.y >= 0 && pointer.x <= rect.width && pointer.y <= rect.height;
-      if (pointer.inside && !wasInside) {
-        const s = settingsRef.current;
-        state.px = (pointer.x - rect.width / 2) / Math.max(1, rect.height);
-        state.py = s.flip ? 1 - pointer.y / Math.max(1, rect.height) : pointer.y / Math.max(1, rect.height);
+      pointer.inside = x >= 0 && y >= 0 && x <= rect.width && y <= rect.height;
+      if (pointer.inside) {
+        pointer.x = (x - rect.width / 2) / Math.max(1, rect.height);
+        if (!wasInside) state.px = pointer.x;
       }
-      if (!settingsRef.current.paused) wake();
-    };
-
-    const onPointerUp = (event: PointerEvent) => {
-      if (event.pointerType !== 'mouse') pointer.inside = false;
+      if (pointer.inside || wasInside) wake();
     };
 
     const onPointerLeave = () => {
+      if (!pointer.inside) return;
       pointer.inside = false;
+      wake();
+    };
+
+    const queueResize = () => {
+      sizePending = true;
+      wake();
     };
 
     const onVisibility = () => {
-      last = 0;
-      wake();
+      if (visible && !document.hidden) {
+        wake();
+      } else {
+        cancelAnimationFrame(raf);
+        raf = 0;
+        lastFrame = undefined;
+        nextFrame = undefined;
+        pointer.inside = false;
+      }
     };
 
-    const resizeObserver = new ResizeObserver(resize);
+    const resizeObserver = new ResizeObserver(queueResize);
     resizeObserver.observe(container);
-    const intersection = new IntersectionObserver(entries => {
-      visible = entries.some(entry => entry.isIntersecting);
-      if (visible) {
-        last = 0;
-        wake();
-      }
+    const intersection = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      onVisibility();
     });
     intersection.observe(container);
+    compact.addEventListener('change', queueResize);
+    reducedMotion.addEventListener('change', wake);
+    window.addEventListener('resize', queueResize);
     window.addEventListener('pointermove', onPointerMove, { passive: true });
-    window.addEventListener('pointerdown', onPointerMove, { passive: true });
-    window.addEventListener('pointerup', onPointerUp, { passive: true });
-    window.addEventListener('pointercancel', onPointerUp, { passive: true });
     document.documentElement.addEventListener('pointerleave', onPointerLeave);
     document.addEventListener('visibilitychange', onVisibility);
-    resize();
-
-    let lastDpr = settingsRef.current.dpr;
-    wakeRef.current = () => {
-      const s = settingsRef.current;
-      if (s.dpr !== lastDpr) {
-        lastDpr = s.dpr;
-        resize();
-        return;
-      }
-      if (!raf) render();
-      wake();
-    };
+    wakeRef.current = wake;
 
     return () => {
       cancelAnimationFrame(raf);
       wakeRef.current = null;
       resizeObserver.disconnect();
       intersection.disconnect();
+      compact.removeEventListener('change', queueResize);
+      reducedMotion.removeEventListener('change', wake);
+      window.removeEventListener('resize', queueResize);
       window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('pointerdown', onPointerMove);
-      window.removeEventListener('pointerup', onPointerUp);
-      window.removeEventListener('pointercancel', onPointerUp);
       document.documentElement.removeEventListener('pointerleave', onPointerLeave);
       document.removeEventListener('visibilitychange', onVisibility);
       gl.deleteProgram(program.program);
