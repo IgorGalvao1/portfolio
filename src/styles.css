@@ -251,7 +251,7 @@ h2 {
   overflow: hidden;
   background: var(--surface);
   border: 1px solid #ffffff12;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 1152 / 652;
   isolation: isolate;
 }
 .project-image img {

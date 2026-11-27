@@ -118,7 +118,7 @@ function ProjectCard({ project }: { project: Project }) {
             alt=""
             loading="lazy"
             width="1152"
-            height="720"
+            height="652"
           />
           <span className="open-project">
             <ExternalLink size={17} />

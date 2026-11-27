@@ -31,7 +31,7 @@ export const projects: Project[] = [
     name: 'ExtremeJet',
     category: 'Profissional',
     description:
-      'Criei o design e as interações que colocam dois bicos de aplicação lado a lado. As animações mostram como o jato do ExtremeJet se comporta em relação ao convencional.',
+      'Criei o design e as interações que colocam dois bicos de aplicação lado a lado. Os vídeos mostram como o jato do ExtremeJet se comporta em relação ao convencional.',
     tools: ['Vue.js', 'GSAP', 'Tailwind CSS'],
     url: 'https://orion.ind.br/extremejet-a-nova-tecnologia-de-bicos-de-aplicacao',
   },
