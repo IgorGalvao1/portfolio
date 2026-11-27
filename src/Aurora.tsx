@@ -11,6 +11,7 @@ export interface AuroraProps {
   speed?: number;
   time?: number;
   height?: number;
+  curvature?: number;
   scale?: number;
   glow?: number;
   brightness?: number;
@@ -33,6 +34,7 @@ type Settings = {
   speed: number;
   time?: number;
   height: number;
+  curvature: number;
   scale: number;
   glow: number;
   brightness: number;
@@ -70,6 +72,7 @@ uniform int uStopCount;
 uniform float uAmplitude;
 uniform float uBlend;
 uniform float uHeight;
+uniform float uCurvature;
 uniform float uScale;
 uniform float uGlow;
 uniform float uBrightness;
@@ -153,6 +156,8 @@ void main() {
   float y = 1.0 - frag.y / uResolution.y;
   y = mix(y, 1.0 - y, uFlip);
   float u = frag.x / uResolution.x;
+  float edge = 2.0 * u - 1.0;
+  float baseHeight = uHeight + uCurvature * edge * edge;
   float X = (frag.x - uResolution.x * 0.5) / uResolution.y;
   float t = uTime;
   float reach = 0.0;
@@ -171,7 +176,7 @@ void main() {
     float warp = snoise(vec2(X * 0.45 * uScale + pace * 0.02 + seed, pace * 0.05 + seed));
     float wave = snoise(vec2(X * 0.75 * uScale + warp * 0.35 - pace * 0.03 + seed, pace * 0.07 - seed)) * 0.72
       + snoise(vec2(X * 1.6 * uScale + warp * 0.5 + pace * 0.04 - seed, pace * 0.1 + seed * 0.5)) * 0.28;
-    float hem = uHeight + layer * 0.07 + wave * 0.15 * uAmplitude;
+    float hem = baseHeight + layer * 0.07 + wave * 0.15 * uAmplitude;
     hem += reach * 0.08 * (layer < 0.5 ? 1.0 : 0.4);
     hem = mix(-0.25, hem, uReveal);
 
@@ -278,6 +283,7 @@ const Aurora = ({
   speed = 1,
   time,
   height = 0.45,
+  curvature = 0,
   scale = 1,
   glow = 0.6,
   brightness = 1,
@@ -303,6 +309,7 @@ const Aurora = ({
     speed,
     time,
     height: clamp(height, 0, 1),
+    curvature: clamp(curvature, 0, 1),
     scale: Math.max(0.1, scale),
     glow: Math.max(0, glow),
     brightness: Math.max(0, brightness),
@@ -392,6 +399,7 @@ const Aurora = ({
       gl.uniform1f(u.uAmplitude, s.amplitude);
       gl.uniform1f(u.uBlend, s.blend);
       gl.uniform1f(u.uHeight, s.height);
+      gl.uniform1f(u.uCurvature, s.curvature);
       gl.uniform1f(u.uScale, s.scale);
       gl.uniform1f(u.uGlow, s.glow);
       gl.uniform1f(u.uBrightness, s.brightness);

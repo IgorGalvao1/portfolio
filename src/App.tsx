@@ -63,6 +63,7 @@ function Hero() {
             amplitude={1}
             blend={0.5}
             height={0.45}
+            curvature={0.4}
             speed={1}
             glow={0.6}
             scale={1}
